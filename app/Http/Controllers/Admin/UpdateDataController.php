@@ -2,17 +2,17 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Http\Controllers\Controller;
-use App\Services\FootballApiService;
+use App\Http\Controllers\Controller; // Aggiungi questa linea
 use Illuminate\Http\Request;
+use App\Services\FootballApiService;
 
 class UpdateDataController extends Controller
 {
-    protected $footballApi;
+    protected $footballApiService;
 
-    public function __construct(FootballApiService $footballApi)
+    public function __construct(FootballApiService $footballApiService)
     {
-        $this->footballApi = $footballApi;
+        $this->footballApiService = $footballApiService;
     }
 
     public function show()
@@ -22,7 +22,15 @@ class UpdateDataController extends Controller
 
     public function update(Request $request)
     {
-        $this->footballApi->updateAllMatches(); // Questo aggiornerà tutti i match dei 5 campionati
-        return redirect()->route('admin.update-data')->with('success', 'Tutti i match sono stati aggiornati con successo.');
+        if ($request->input('action') == 'updateMatches') {
+            $updatedMatches = app(FootballApiService::class)->updateAllMatches();
+            return back()->with('success', $updatedMatches . ' partite sono state aggiornate con successo.');
+        } elseif ($request->input('action') == 'updateStatistics') {
+            $updatedMatches = app(FootballApiService::class)->updateMatchStatistics();
+            return back()->with('success', $updatedMatches . ' statistiche di partite sono state aggiornate con successo.');
+        }
+
+        return back()->with('error', 'Azione non valida.');
     }
+
 }

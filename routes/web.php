@@ -5,7 +5,7 @@ use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 
 //admin controller
-use App\Http\Controllers\AdminController;
+use App\Http\Controllers\Admin\AdminController;
 use App\Http\Controllers\Admin\UpdateDataController;
 
 //Leagues Controller
@@ -53,6 +53,7 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
     Route::get('/admin/update-data', [UpdateDataController::class, 'show'])->name('admin.update-data');
     Route::post('/admin/update-data', [UpdateDataController::class, 'update'])->name('admin.update-data.execute');
 });
+
 
 // Rotte per le leghe italiane
 Route::get('/italy/seriea', [SerieAController::class, 'index'])->name('italy.seriea');

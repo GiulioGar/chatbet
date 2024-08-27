@@ -120,15 +120,15 @@
                     <div class="rd-navbar-main-container container">
                       <!-- RD Navbar Nav-->
                       <ul class="rd-navbar-nav">
-                        <li class="rd-nav-item active"><a class="rd-nav-link" href="index.html">Home</a></li>
+                        <li class="rd-nav-item active"><a class="rd-nav-link" href="/">Home</a></li>
                         <li class="rd-nav-item dropdown">
                           <a class="rd-nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Campionati</a>
                           <div class="dropdown-menu" aria-labelledby="navbarDropdown">
-                            <a class="dropdown-item" href="italy/seriea">Bubdesliga</a>
+                            <a class="dropdown-item" href="#">Bubdesliga</a>
                             <a class="dropdown-item" href="#">Liga</a>
                             <a class="dropdown-item" href="#">Ligue 1</a>
                             <a class="dropdown-item" href="#">Premier </a>
-                            <a class="dropdown-item" href="italy/seriea">Serie A </a>
+                            <a class="dropdown-item" href="#">Serie A </a>
                           </div>
                         </li>
                         <li class="rd-nav-item"><a class="rd-nav-link" href="https://livedemo00.template-help.com/wt_63853_v4/soccer/index.html">Typography</a></li>
@@ -137,8 +137,8 @@
                         <li class="rd-nav-item dropdown">
                             <a class="rd-nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">ADMIN</a>
                             <div class="dropdown-menu" aria-labelledby="navbarDropdown">
-                              <a class="dropdown-item" href="admin/dashboard">User</a>
-                              <a class="dropdown-item" href="admin/update-data">Dati API</a>
+                                <a class="dropdown-item" href="{{ route('admin.dashboard') }}">User</a>
+                                <a class="dropdown-item" href="{{ route('admin.update-data') }}">Dati API</a>
                             </div>
                           </li>
                           @endif

@@ -9,7 +9,9 @@ class Matches extends Model
 {
     use HasFactory;
 
+    // Aggiungi fixture_id all'elenco dei campi fillable
     protected $fillable = [
+        'fixture_id',
         'league_id',
         'home_id',
         'away_id',
@@ -17,10 +19,42 @@ class Matches extends Model
         'match_time',
         'home_score',
         'away_score',
-        'home_ht', // Punteggio primo tempo squadra di casa
-        'away_ht', // Punteggio primo tempo squadra ospite
-        'home_ft', // Punteggio secondo tempo squadra di casa
-        'away_ft', // Punteggio secondo tempo squadra ospite
-        'referee'
+        'home_ht',
+        'away_ht',
+        'home_ft',
+        'away_ft',
+        'referee',
+        'sog_home',
+        'sog_away',
+        'sof_home',
+        'sof_away',
+        'sib_home',
+        'sib_away',
+        'sob_home',
+        'sob_away',
+        'tsh_home',
+        'tsh_away',
+        'blk_home',
+        'blk_away',
+        'fouls_home',
+        'fouls_away',
+        'corners_home',
+        'corners_away',
+        'offsides_home',
+        'offsides_away',
+        'possession_home',
+        'possession_away',
+        'yc_home',
+        'yc_away',
+        'rc_home',
+        'rc_away',
+        'saves_home',
+        'saves_away',
+        'tpass_home',
+        'tpass_away',
+        'pacc_home',
+        'pacc_away',
+        'pperc_home',
+        'pperc_away',
     ];
 }
