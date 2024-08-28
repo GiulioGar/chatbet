@@ -9,5 +9,5 @@ class Team extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['league_id','name'];
+    protected $fillable = ['league_id', 'name', 'matches_played'];
 }
