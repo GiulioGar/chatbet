@@ -9,7 +9,6 @@ class Matches extends Model
 {
     use HasFactory;
 
-    // Aggiungi fixture_id all'elenco dei campi fillable
     protected $fillable = [
         'fixture_id',
         'league_id',
@@ -57,4 +56,15 @@ class Matches extends Model
         'pperc_home',
         'pperc_away',
     ];
+
+    public function homeTeam()
+    {
+        return $this->belongsTo(Team::class, 'home_id', 'team_id');
+    }
+
+    public function awayTeam()
+    {
+        return $this->belongsTo(Team::class, 'away_id', 'team_id');
+    }
+
 }

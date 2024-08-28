@@ -124,11 +124,11 @@
                         <li class="rd-nav-item dropdown">
                           <a class="rd-nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Campionati</a>
                           <div class="dropdown-menu" aria-labelledby="navbarDropdown">
-                            <a class="dropdown-item" href="#">Bubdesliga</a>
-                            <a class="dropdown-item" href="#">Liga</a>
-                            <a class="dropdown-item" href="#">Ligue 1</a>
-                            <a class="dropdown-item" href="#">Premier </a>
-                            <a class="dropdown-item" href="#">Serie A </a>
+                            <a class="dropdown-item" href="{{ route('league.show', ['leagueSlug' => 'bundesliga']) }}">Bundesliga</a>
+                            <a class="dropdown-item" href="{{ route('league.show', ['leagueSlug' => 'la-liga']) }}">La Liga</a>
+                            <a class="dropdown-item" href="{{ route('league.show', ['leagueSlug' => 'ligue-1']) }}">Ligue 1</a>
+                            <a class="dropdown-item" href="{{ route('league.show', ['leagueSlug' => 'premier-league']) }}">Premier League</a>
+                            <a class="dropdown-item" href="{{ route('league.show', ['leagueSlug' => 'serie-a']) }}">Serie A</a>
                           </div>
                         </li>
                         <li class="rd-nav-item"><a class="rd-nav-link" href="https://livedemo00.template-help.com/wt_63853_v4/soccer/index.html">Typography</a></li>
