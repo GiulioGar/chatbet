@@ -12,7 +12,7 @@
         <link href="{{ asset('css/custom.css') }}" rel="stylesheet">
         <link href="{{ asset('css/fonts.css') }}" rel="stylesheet">
         <style>.ie-panel{display: none;background: #212121;padding: 10px 0;box-shadow: 3px 3px 5px 0 rgba(0,0,0,.3);clear: both;text-align:center;position: relative;z-index: 1;} html.ie-10 .ie-panel, html.lt-ie-10 .ie-panel {display: block;}</style>
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" integrity="sha512-Kc323vGBEqzTmouAECnVceyQqyqdsSiqLQISBL29aUW4U/M7pSPA/gEUZQqv1cwx4OnYxTxve5UMg5GT6L4JJg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
         <link rel="icon" href="images/favicon.ico" type="image/x-icon">
     </head>
 
@@ -250,6 +250,8 @@
 
 
       </body>
+
+      <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
 
       <script src="{{ asset('js/core.min.js') }}"></script>
       <script src="{{ asset('js/custom.js') }}"></script>

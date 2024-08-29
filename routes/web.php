@@ -9,7 +9,7 @@ use App\Http\Controllers\Admin\AdminController;
 use App\Http\Controllers\Admin\UpdateDataController;
 
 //Stats Controller
-use App\Http\Controllers\StatsController;
+use App\Http\Controllers\TeamController;
 
 /*
 |--------------------------------------------------------------------------
@@ -51,6 +51,7 @@ Route::group(['middleware' => ['auth', 'role:admin'], 'prefix' => 'admin', 'as' 
 Route::middleware(['auth', 'role:admin'])->group(function () {
     Route::get('/admin/update-data', [UpdateDataController::class, 'show'])->name('admin.update-data');
     Route::post('/admin/update-data', [UpdateDataController::class, 'update'])->name('admin.update-data.execute');
+    Route::post('/admin/update-teams', [TeamController::class, 'updateTeams'])->name('admin.update-teams.execute');
 });
 
 
