@@ -12770,7 +12770,7 @@ span.page-link:hover, span.page-link:focus, span.page-link:active {
 	text-align: center;
 	text-transform: uppercase;
 	color: #fff;
-	background: #e1e1e1;
+	/*background: #e1e1e1; */
 	border-radius: 4px;
 }
 

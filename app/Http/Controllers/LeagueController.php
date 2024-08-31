@@ -22,6 +22,17 @@ class LeagueController extends Controller
         // Aggiungi altri campionati secondo necessità
     ];
 
+    public function getLeagueNameById($leagueId)
+    {
+        // Cerca l'ID della lega nella mappa e restituisce il nome corrispondente
+        $leagueName = array_search($leagueId, $this->leagueMapping);
+        if ($leagueName !== false) {
+            return ucfirst(str_replace('-', ' ', $leagueName)); // Formatta il nome della lega
+        }
+
+        return null; // Restituisce null se l'ID della lega non è trovato
+    }
+
     /**
      * Mostra la pagina delle statistiche per la lega specificata.
      *

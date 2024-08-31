@@ -34,8 +34,12 @@ Route::get('/dashboard', function () {
 
 use App\Http\Controllers\LeagueController;
 
+//rotta per pagina delle stastiche leghe
 Route::get('/league/{leagueSlug}', [LeagueController::class, 'show'])->name('league.show');
+
+//rotta per la pagina delle statistiche partita
 Route::get('/statMatch/{homeTeam}/{awayTeam}', [MatchController::class, 'showStatistics'])->name('match.statMatch');
+
 
 
 

@@ -328,7 +328,7 @@ margin:0;
                                             @endforeach
                                         </ul>
                                     </td>
-                                    <td><a href="#" class="btn btn-sm btn-link">Stats</a></td>
+                                    <td><a href="{{ route('match.statMatch', ['homeTeam' => $match->homeTeam->name, 'awayTeam' => $match->awayTeam->name]) }}" class="btn btn-sm btn-link">Stats</a></td>
                                 </tr>
                             @endforeach
                         </tbody>
