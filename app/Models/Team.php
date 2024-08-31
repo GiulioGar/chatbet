@@ -28,5 +28,14 @@ class Team extends Model
         't_gg_ht', 't_gg_ft'
     ];
 
+
     // Definisci altre relazioni o metodi se necessario
+
+    public function matches()
+    {
+        return Matches::where(function ($query) {
+            $query->where('home_id', $this->team_id)
+                  ->orWhere('away_id', $this->team_id);
+        });
+    }
 }

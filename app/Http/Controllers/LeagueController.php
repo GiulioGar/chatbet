@@ -8,6 +8,7 @@ use App\Models\Team;    // Modello per accedere ai dati delle squadre
 use Illuminate\Support\Facades\Log; // Per il logging
 use Carbon\Carbon; // Importa Carbon per la gestione delle date
 use Exception;
+use App\Services\TeamStatisticsService; // Servizio per aggiornare le statistiche delle squadre
 
 class LeagueController extends Controller
 {
@@ -29,32 +30,44 @@ class LeagueController extends Controller
      */
     public function show($leagueSlug)
     {
+        Log::info("Show method called for leagueSlug: $leagueSlug");
+
         try {
             // Ottieni l'ID della lega dallo slug
             $leagueId = $this->getLeagueIdFromSlug($leagueSlug);
+            Log::info("Mapped leagueSlug to leagueId: $leagueId");
+
+            // Aggiorna le statistiche delle squadre prima di procedere
+            $teamStatsService = new TeamStatisticsService();
+            $teamStatsService->updateTeamStatistics();
 
             // Recupera le partite per la lega specifica
-            $matches = $this->getMatchesByLeagueId($leagueId);
-
-            // Aggiorna e ottieni le statistiche delle squadre
-            $teams = $this->updateAndGetTeamsStats($leagueId);
-
-            // Conta il numero di squadre
+            $matches = $this->getMatchesByLeagueId($leagueId) ?? collect();
+            $teams = $this->getTeamsByLeagueId($leagueId) ?? collect(); // Recupera le squadre
             $teamCount = $teams->count();
 
+            // Calcola i punti per ciascuna squadra e ordina per punti, differenza reti e gol fatti
+            $teams = $teams->map(function ($team) {
+                $team->points = ($team->t_wins * 3) + $team->t_draws;
+                $team->goal_difference = $team->t_goals_for - $team->t_goals_against;
+                return $team;
+            })->sortByDesc(function ($team) {
+                return [$team->points, $team->goal_difference, $team->t_goals_for];
+            });
+
             // Calcolo delle statistiche delle partite
-            $totalMatches = $matches->count(); // Numero totale di partite giocate e in programma
-            $remainingMatches = $matches->whereNull('home_score')->count(); // Partite senza risultato indicano quelle da giocare
+            $totalMatches = $matches->count();
+            $remainingMatches = $matches->whereNull('home_score')->count();
             $playMatches = $totalMatches - $remainingMatches;
-            $percMatches = floor(($playMatches / $totalMatches) * 100);
+            $percMatches = $totalMatches > 0 ? floor(($playMatches / $totalMatches) * 100) : 0;
 
             // Recupera le prossime 10 partite ordinate per data
-            $nextMatches = $this->getNextTenMatches($leagueId);
+            $nextMatches = $this->getNextTenMatches($leagueId) ?? collect();
 
             // Aggiungi le ultime 5 partite per ogni squadra
             foreach ($nextMatches as $match) {
-                $match->home_last_five = $this->getLastFiveMatches($match->home_id);
-                $match->away_last_five = $this->getLastFiveMatches($match->away_id);
+                $match->home_last_five = $this->getLastFiveMatches($match->home_id) ?? collect();
+                $match->away_last_five = $this->getLastFiveMatches($match->away_id) ?? collect();
             }
 
             // Log per debugging
@@ -71,11 +84,11 @@ class LeagueController extends Controller
                 'matches' => $matches,
                 'teams' => $teams,
                 'teamCount' => $teamCount,
-                'totalMatches' => $totalMatches,       // Passa il numero totale di partite alla vista
-                'remainingMatches' => $remainingMatches, // Passa il numero di partite ancora da giocare alla vista
-                'playMatches' => $playMatches,         // Partite giocate
-                'percMatches' => $percMatches,         // Percentuale delle partite giocate
-                'nextMatches' => $nextMatches,         // Prossimi 10 match
+                'totalMatches' => $totalMatches,
+                'remainingMatches' => $remainingMatches,
+                'playMatches' => $playMatches,
+                'percMatches' => $percMatches,
+                'nextMatches' => $nextMatches,
             ]);
         } catch (Exception $e) {
             // Logga l'errore per il debugging
@@ -87,6 +100,8 @@ class LeagueController extends Controller
             return back()->with('error', 'Si è verificato un errore durante il caricamento delle partite. Riprova più tardi.');
         }
     }
+
+
 
     /**
      * Ottieni l'ID della lega a partire dallo slug.
@@ -110,24 +125,11 @@ class LeagueController extends Controller
     }
 
     /**
-     * Aggiorna il numero di partite giocate per ogni squadra e restituisce l'elenco aggiornato delle squadre.
+     * Recupera tutte le squadre basate sull'ID della lega.
      */
-    private function updateAndGetTeamsStats($leagueId)
+    private function getTeamsByLeagueId($leagueId)
     {
-        $teams = Team::where('league_id', $leagueId)->get();
-
-        foreach ($teams as $team) {
-            // Conta le partite giocate come squadra di casa o ospite
-            $matchesPlayed = Matches::where('home_id', $team->team_id)
-                ->orWhere('away_id', $team->team_id)
-                ->count();
-
-            // Aggiorna il campo matches_played
-            $team->matches_played = $matchesPlayed;
-            $team->save();
-        }
-
-        return $teams; // Restituisce l'elenco aggiornato delle squadre
+        return Team::where('league_id', $leagueId)->get();
     }
 
     /**
@@ -136,7 +138,6 @@ class LeagueController extends Controller
      */
     private function getNextTenMatches($leagueId)
     {
-        // Imposta la lingua italiana per Carbon
         Carbon::setLocale('it');
 
         return Matches::with(['homeTeam', 'awayTeam'])
@@ -147,9 +148,7 @@ class LeagueController extends Controller
             ->take(10)
             ->get()
             ->map(function ($match) {
-                // Formatta la data in italiano
                 $match->formatted_date = Carbon::parse($match->match_date)->translatedFormat('D d M');
-                // Formatta l'orario (prendendo solo le prime 5 cifre)
                 $match->formatted_time = substr($match->match_time, 0, 5);
                 return $match;
             });
@@ -157,9 +156,6 @@ class LeagueController extends Controller
 
     /**
      * Ottieni le ultime 5 partite giocate da una squadra specifica.
-     *
-     * @param int $teamId
-     * @return \Illuminate\Support\Collection
      */
     public function getLastFiveMatches($teamId)
     {
@@ -168,16 +164,14 @@ class LeagueController extends Controller
                 $query->where('home_id', $teamId)
                       ->orWhere('away_id', $teamId);
             })
-            ->whereNotNull('home_score') // Considera solo le partite con punteggi definiti
+            ->whereNotNull('home_score')
             ->whereNotNull('away_score')
             ->orderBy('match_date', 'desc')
             ->orderBy('match_time', 'desc')
             ->take(5)
             ->get()
             ->map(function ($match) use ($teamId) {
-                // Determina il risultato considerando i punteggi
                 if ($match->home_id == $teamId) {
-                    // Squadra gioca in casa
                     $match->is_home = true;
                     if ($match->home_score > $match->away_score) {
                         $match->result = 'win';
@@ -190,7 +184,6 @@ class LeagueController extends Controller
                         $match->resultLogo = '🟨';
                     }
                 } else {
-                    // Squadra gioca fuori casa
                     $match->is_home = false;
                     if ($match->away_score > $match->home_score) {
                         $match->result = 'win';
@@ -206,8 +199,6 @@ class LeagueController extends Controller
                 return $match;
             });
     }
-
-
 
     /**
      * Formatta il nome della lega sostituendo i trattini con spazi e capitalizzando.

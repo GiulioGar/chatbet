@@ -10,6 +10,7 @@ use App\Http\Controllers\Admin\UpdateDataController;
 
 //Stats Controller
 use App\Http\Controllers\TeamController;
+use App\Http\Controllers\MatchController;
 
 /*
 |--------------------------------------------------------------------------
@@ -34,6 +35,8 @@ Route::get('/dashboard', function () {
 use App\Http\Controllers\LeagueController;
 
 Route::get('/league/{leagueSlug}', [LeagueController::class, 'show'])->name('league.show');
+Route::get('/statMatch/{homeTeam}/{awayTeam}', [MatchController::class, 'showStatistics'])->name('match.statMatch');
+
 
 
 
