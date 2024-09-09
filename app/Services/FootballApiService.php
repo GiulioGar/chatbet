@@ -44,62 +44,78 @@ class FootballApiService
     }
 
     public function updateAllMatches()
-    {
-        $season = 2024; // Modifica secondo la stagione corrente
-        $updatedMatches = 0; // Contatore per il numero di match aggiornati
+{
+    $season = 2024; // Modifica secondo la stagione corrente
+    $updatedMatches = 0; // Contatore per il numero di match aggiornati
 
-        foreach ($this->leagues as $leagueId => $leagueName) {
-            $response = $this->get('/fixtures', [
-                'league' => $leagueId,
-                'season' => $season,
-            ]);
+    foreach ($this->leagues as $leagueId => $leagueName) {
+        $response = $this->get('/fixtures', [
+            'league' => $leagueId,
+            'season' => $season,
+        ]);
 
-            if (isset($response['response'])) {
-                foreach ($response['response'] as $matchData) {
-                    $fixtureId = $matchData['fixture']['id'];
-                    $homeTeamId = $matchData['teams']['home']['id'];
-                    $awayTeamId = $matchData['teams']['away']['id'];
+        if (isset($response['response'])) {
+            foreach ($response['response'] as $matchData) {
+                $fixtureId = $matchData['fixture']['id'];
+                $homeTeamId = $matchData['teams']['home']['id'];
+                $awayTeamId = $matchData['teams']['away']['id'];
 
-                    $matchDateTime = Carbon::parse($matchData['fixture']['date'])->setTimezone('Europe/Rome');
-                    $matchDate = $matchDateTime->format('Y-m-d');
-                    $matchTime = $matchDateTime->format('H:i:s');
+                $matchDateTime = Carbon::parse($matchData['fixture']['date'])->setTimezone('Europe/Rome');
+                $matchDate = $matchDateTime->format('Y-m-d');
+                $matchTime = $matchDateTime->format('H:i:s');
 
-                    if ($matchTime === '00:00:00' || empty($matchTime)) {
-                        $matchTime = '15:00:00';
-                    }
+                if ($matchTime === '00:00:00' || empty($matchTime)) {
+                    $matchTime = '15:00:00';
+                }
 
-                    // Inserisci o aggiorna la partita utilizzando l'ID della fixture
-                    $match = Matches::updateOrCreate(
-                        [
-                            'fixture_id' => $fixtureId,
-                            'league_id' => $leagueId,
-                            'home_id' => $homeTeamId,
-                            'away_id' => $awayTeamId,
-                            'match_date' => $matchDate,
-                        ],
-                        [
-                            'match_time' => $matchTime,
-                            'home_score' => $matchData['goals']['home'],
-                            'away_score' => $matchData['goals']['away'],
-                            'home_ht' => $matchData['score']['halftime']['home'],
-                            'away_ht' => $matchData['score']['halftime']['away'],
-                            'home_ft' => $matchData['score']['fulltime']['home'],
-                            'away_ft' => $matchData['score']['fulltime']['away'],
-                            'referee' => $matchData['fixture']['referee']
-                        ]
-                    );
+                // Cerca se la partita esiste già nel database con lo stesso fixtureId
+                $existingMatch = Matches::where('fixture_id', $fixtureId)->first();
 
-                    // Incrementa il contatore se un match è stato aggiornato o creato
-                    if ($match->wasRecentlyCreated || $match->wasChanged()) {
-                        $updatedMatches++;
-                    }
+                if ($existingMatch) {
+                    // Se la partita esiste, aggiorna solo i campi necessari
+                    $existingMatch->update([
+                        'match_date' => $matchDate,
+                        'match_time' => $matchTime,
+                        'home_score' => $matchData['goals']['home'],
+                        'away_score' => $matchData['goals']['away'],
+                        'home_ht' => $matchData['score']['halftime']['home'],
+                        'away_ht' => $matchData['score']['halftime']['away'],
+                        'home_ft' => $matchData['score']['fulltime']['home'],
+                        'away_ft' => $matchData['score']['fulltime']['away'],
+                        'referee' => $matchData['fixture']['referee']
+                    ]);
+
+                    // Incrementa il contatore degli aggiornamenti
+                    $updatedMatches++;
+                } else {
+                    // Se la partita non esiste, crea un nuovo record
+                    Matches::create([
+                        'fixture_id' => $fixtureId,
+                        'league_id' => $leagueId,
+                        'home_id' => $homeTeamId,
+                        'away_id' => $awayTeamId,
+                        'match_date' => $matchDate,
+                        'match_time' => $matchTime,
+                        'home_score' => $matchData['goals']['home'],
+                        'away_score' => $matchData['goals']['away'],
+                        'home_ht' => $matchData['score']['halftime']['home'],
+                        'away_ht' => $matchData['score']['halftime']['away'],
+                        'home_ft' => $matchData['score']['fulltime']['home'],
+                        'away_ft' => $matchData['score']['fulltime']['away'],
+                        'referee' => $matchData['fixture']['referee']
+                    ]);
+
+                    // Incrementa il contatore degli aggiornamenti
+                    $updatedMatches++;
                 }
             }
         }
-
-        // Ritorna il numero di match aggiornati
-        return $updatedMatches;
     }
+
+    // Ritorna il numero di match aggiornati
+    return $updatedMatches;
+}
+
 
 
     public function updateMatchStatistics()
