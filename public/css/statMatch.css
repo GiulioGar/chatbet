@@ -1,0 +1,227 @@
+.match-header-container {
+    width: 100%;
+    background-color: #1a1a2e;
+    padding: 0.5rem 0;  /* Ridotto padding per avvicinare i contenuti */
+    margin-bottom: 1rem;  /* Riduzione del margine inferiore */
+}
+
+#match-header {
+    display: flex;
+    align-items: center;
+    justify-content: center;  /* Allineamento centrale per tutte le sezioni */
+    max-width: 1200px;  /* Limitare la larghezza massima per un layout compatto */
+    margin: 0 auto;  /* Centra il contenitore */
+}
+
+.hero-team {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0;  /* Rimuove margini extra */
+}
+
+.team-logo {
+    margin: 0;  /* Rimuove margini extra attorno al logo */
+}
+
+.team-logo img {
+   width: 90%;
+}
+.team-info {
+    margin-left: 0.5rem;  /* Margine minimo per separare logo e informazioni */
+}
+
+.text-right .team-info {
+    margin-right: 0.5rem;  /* Spostare leggermente a destra il testo della squadra ospite */
+}
+
+.text-dark { font-size: 15px;}
+
+.form-run-neo {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 0.2rem;  /* Riduzione del margine superiore */
+}
+
+.breadcrumb a {
+    color: #8899aa;
+    text-decoration: none;
+    font-size: 1.15rem;  /* Ridotto il font per breadcrumb */
+    text-align: center;
+}
+
+.breadcrumb a:hover {
+    color: #fff;
+}
+
+.match-info {
+    margin: 0 1rem;  /* Margine ridotto per avvicinare le sezioni */
+    text-align: center;
+    margin-left: 5%!important;
+    margin-right: 5%!important;
+}
+
+.match-info h1 {
+    color: #fff;
+    margin: 0.2rem 0;  /* Riduzione del margine */
+    font-size: 1.1rem;  /* Ridotto il font per adattarsi meglio */
+}
+
+.scoreline {
+    color: #aaa;
+    font-size: 0.8rem;
+    margin-top: 0.2rem;  /* Riduzione del margine superiore */
+}
+
+.form-box {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%; /* Larghezza fissa per il contenitore */
+    padding: 5px; /* Padding per gestire lo spazio interno */
+    background-color: #eee; /* Sfondo chiaro per visibilità */
+    border-radius: 5px; /* Bordo arrotondato per un tocco estetico */
+}
+
+.fixed-width {
+    min-width: 0.8em;
+    max-width: 8.5em;
+}
+
+.badge .infopoint {
+    font-size: 0.9rem; /* Dimensione del testo all'interno del badge */
+    padding: 0.3rem 0.6rem; /* Padding per un badge compatto */
+    margin-left: 5px; /* Distanza tra il div e il badge */
+}
+
+.hero-team-name { font-size: 1.5em;  font-family: 'Roboto', sans-serif;}
+
+.breadcrumb { padding:2%!important;}
+
+.breadcrumb a {text-transform: uppercase; margin-left: 25%;}
+
+
+
+.card-custom {
+    border: 1px solid #e0e0e0;
+    border-radius: 10px;
+    padding: 20px;
+  }
+
+  .header {
+    font-size: 20px;
+    font-weight: bold;
+    margin-bottom: 20px;
+    text-align: center;
+  }
+
+  .row-team {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .team-logo {
+    width: 60px;
+  }
+
+  .progress-bar-container {
+    flex-grow: 1;
+    margin: 0 20px;
+  }
+
+  .progress-bar {
+    height: 30px;
+    background-color: #f0f0f0;
+    border-radius: 5px;
+    display: flex;
+    overflow: hidden;
+  }
+
+  .progress-green {
+    background-color: #28a745;
+    width: 20%;
+  }
+
+  .progress-yellow {
+    background-color: #ffc107;
+    width: 20%;
+  }
+
+  .progress-red {
+    background-color: #dc3545;
+    width: 60%;
+  }
+
+  .stat-box {
+    text-align: center;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    margin: 10px;
+    padding: 15px;
+    position: relative;
+  }
+
+  .stat-number {
+    font-size: 24px;
+    font-weight: bold;
+  }
+
+  .stat-description {
+    font-size: 14px;
+    color: #777;
+  }
+
+  .footer-green {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 5px;
+    background-color: #28a745;
+  }
+
+  .footer-yellow {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 5px;
+    background-color: #ffc107;
+  }
+
+  .footer-red {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 5px;
+    background-color: #dc3545;
+  }
+
+
+  .position-gold {
+    background-color: gold;
+    color: black;
+}
+
+.position-silver {
+    background-color: silver;
+    color: black;
+}
+
+.position-bronze {
+    background-color: #cd7f32; /* Colore bronzo */
+    color: black;
+}
+
+.position-red {
+    background-color: rgb(155, 17, 17);
+    color: white;
+}
+
+.highlight-team {
+    background-color: rgb(23, 132, 182);
+    color: white;
+}

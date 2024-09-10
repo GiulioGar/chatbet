@@ -44,75 +44,103 @@ class LeagueController extends Controller
         Log::info("Show method called for leagueSlug: $leagueSlug");
 
         try {
-            // Ottieni l'ID della lega dallo slug
-            $leagueId = $this->getLeagueIdFromSlug($leagueSlug);
-            Log::info("Mapped leagueSlug to leagueId: $leagueId");
-
-            // Aggiorna le statistiche delle squadre prima di procedere
-            $teamStatsService = new TeamStatisticsService();
-            $teamStatsService->updateTeamStatistics();
-
-            // Recupera le partite per la lega specifica
-            $matches = $this->getMatchesByLeagueId($leagueId) ?? collect();
-            $teams = $this->getTeamsByLeagueId($leagueId) ?? collect(); // Recupera le squadre
-            $teamCount = $teams->count();
-
-            // Calcola i punti per ciascuna squadra e ordina per punti, differenza reti e gol fatti
-            $teams = $teams->map(function ($team) {
-                $team->points = ($team->t_wins * 3) + $team->t_draws;
-                $team->goal_difference = $team->t_goals_for - $team->t_goals_against;
-                return $team;
-            })->sortByDesc(function ($team) {
-                return [$team->points, $team->goal_difference, $team->t_goals_for];
-            });
-
-            // Calcolo delle statistiche delle partite
-            $totalMatches = $matches->count();
-            $remainingMatches = $matches->whereNull('home_score')->count();
-            $playMatches = $totalMatches - $remainingMatches;
-            $percMatches = $totalMatches > 0 ? floor(($playMatches / $totalMatches) * 100) : 0;
-
-            // Recupera le prossime 10 partite ordinate per data
-            $nextMatches = $this->getNextTenMatches($leagueId) ?? collect();
-
-            // Aggiungi le ultime 5 partite per ogni squadra
-            foreach ($nextMatches as $match) {
-                $match->home_last_five = $this->getLastFiveMatches($match->home_id) ?? collect();
-                $match->away_last_five = $this->getLastFiveMatches($match->away_id) ?? collect();
-            }
-
-            // Log per debugging
-            Log::info("Partite e squadre recuperate per la lega: $leagueSlug", [
-                'matches' => $matches->toArray(),
-                'team_count' => $teamCount,
-                'total_matches' => $totalMatches,
-                'remaining_matches' => $remainingMatches,
-            ]);
+            // Richiama la logica centralizzata per ottenere i dati
+            $data = $this->prepareLeagueData($leagueSlug);
 
             // Passa i dati alla vista
-            return view('leagues.statistics', [
-                'leagueName' => $this->formatLeagueName($leagueSlug),
-                'matches' => $matches,
-                'teams' => $teams,
-                'teamCount' => $teamCount,
-                'totalMatches' => $totalMatches,
-                'remainingMatches' => $remainingMatches,
-                'playMatches' => $playMatches,
-                'percMatches' => $percMatches,
-                'nextMatches' => $nextMatches,
-            ]);
+            return view('leagues.statistics', $data);
         } catch (Exception $e) {
-            // Logga l'errore per il debugging
             Log::error("Errore durante il recupero delle partite per la lega: $leagueSlug", [
                 'exception' => $e->getMessage()
             ]);
 
-            // Mostra un messaggio di errore all'utente
             return back()->with('error', 'Si è verificato un errore durante il caricamento delle partite. Riprova più tardi.');
         }
     }
 
+    /**
+     * Mostra la pagina delle statistiche delle partite.
+     *
+     * @param string $leagueSlug
+     * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View
+     */
+    public function showStatMatch($leagueSlug)
+    {
+        Log::info("ShowStatMatch method called for leagueSlug: $leagueSlug");
 
+        try {
+            // Richiama la logica centralizzata per ottenere i dati
+            $data = $this->prepareLeagueData($leagueSlug);
+
+            // Passa i dati alla vista statMatch
+            return view('leagues.statMatch', $data);
+        } catch (Exception $e) {
+            Log::error("Errore durante il recupero delle partite per la lega: $leagueSlug", [
+                'exception' => $e->getMessage()
+            ]);
+
+            return back()->with('error', 'Si è verificato un errore durante il caricamento delle partite. Riprova più tardi.');
+        }
+    }
+
+    /**
+     * Centralizza la logica per preparare i dati di una lega.
+     *
+     * @param string $leagueSlug
+     * @return array
+     */
+    private function prepareLeagueData($leagueSlug)
+    {
+        // Ottieni l'ID della lega dallo slug
+        $leagueId = $this->getLeagueIdFromSlug($leagueSlug);
+        Log::info("Mapped leagueSlug to leagueId: $leagueId");
+
+        // Aggiorna le statistiche delle squadre prima di procedere
+        $teamStatsService = new TeamStatisticsService();
+        $teamStatsService->updateTeamStatistics();
+
+        // Recupera le partite per la lega specifica
+        $matches = $this->getMatchesByLeagueId($leagueId) ?? collect();
+        $teams = $this->getTeamsByLeagueId($leagueId) ?? collect(); // Recupera le squadre
+        $teamCount = $teams->count();
+
+        // Calcola i punti per ciascuna squadra e ordina
+        $teams = $teams->map(function ($team) {
+            $team->points = ($team->t_wins * 3) + $team->t_draws;
+            $team->goal_difference = $team->t_goals_for - $team->t_goals_against;
+            return $team;
+        })->sortByDesc(function ($team) {
+            return [$team->points, $team->goal_difference, $team->t_goals_for];
+        });
+
+        // Calcola le statistiche generali
+        $totalMatches = $matches->count();
+        $remainingMatches = $matches->whereNull('home_score')->count();
+        $playMatches = $totalMatches - $remainingMatches;
+        $percMatches = $totalMatches > 0 ? floor(($playMatches / $totalMatches) * 100) : 0;
+
+        // Recupera le prossime 10 partite ordinate per data
+        $nextMatches = $this->getNextTenMatches($leagueId) ?? collect();
+
+        // Aggiungi le ultime 5 partite per ogni squadra
+        foreach ($nextMatches as $match) {
+            // Usa collect() per assicurarsi che non sia mai null
+            $match->home_last_five = $this->getLastFiveMatches($match->home_id) ?: collect();
+            $match->away_last_five = $this->getLastFiveMatches($match->away_id) ?: collect();
+        }
+
+        return [
+            'leagueName' => $this->formatLeagueName($leagueSlug),
+            'matches' => $matches,
+            'teams' => $teams,  // Assicurati che $teams venga passato qui
+            'teamCount' => $teamCount,
+            'totalMatches' => $totalMatches,
+            'remainingMatches' => $remainingMatches,
+            'playMatches' => $playMatches,
+            'percMatches' => $percMatches,
+            'nextMatches' => $nextMatches,
+        ];
+    }
 
     /**
      * Ottieni l'ID della lega a partire dallo slug.
