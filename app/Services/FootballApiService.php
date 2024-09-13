@@ -5,6 +5,7 @@ namespace App\Services;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Http;
 use App\Models\Matches;
+use App\Models\Team;
 use Illuminate\Support\Facades\Log; // Importa la facciata Log corretta
 
 class FootballApiService
@@ -124,14 +125,80 @@ class FootballApiService
         $updatedMatches = 0; // Contatore per il numero di match aggiornati
 
         $matches = Matches::where(function ($query) use ($now) {
-                $query->where('match_date', '<', $now->format('Y-m-d'))
-                      ->orWhere(function ($query) use ($now) {
-                          $query->where('match_date', '=', $now->format('Y-m-d'))
-                                ->where('match_time', '<=', $now->format('H:i:s'));
-                      });
-            })
-            ->whereNull('sog_home') // Controllo che le statistiche non siano già state aggiornate
-            ->get();
+            $query->where('match_date', '<', $now->format('Y-m-d'))
+                  ->orWhere(function ($query) use ($now) {
+                      $query->where('match_date', '=', $now->format('Y-m-d'))
+                            ->where('match_time', '<=', $now->format('H:i:s'));
+                  });
+        })
+        ->where(function ($query) {
+            // Aggiungi la condizione per controllare se uno dei campi è null o vuoto
+            $query->whereNull('sog_home')
+                  ->orWhereNull('sog_away')
+                  ->orWhereNull('sof_home')
+                  ->orWhereNull('sof_away')
+                  ->orWhereNull('sib_home')
+                  ->orWhereNull('sib_away')
+                  ->orWhereNull('sob_home')
+                  ->orWhereNull('sob_away')
+                  ->orWhereNull('tsh_home')
+                  ->orWhereNull('tsh_away')
+                  ->orWhereNull('blk_home')
+                  ->orWhereNull('blk_away')
+                  ->orWhereNull('fouls_home')
+                  ->orWhereNull('fouls_away')
+                  ->orWhereNull('corners_home')
+                  ->orWhereNull('corners_away')
+                  ->orWhereNull('offsides_home')
+                  ->orWhereNull('offsides_away')
+                  ->orWhereNull('possession_home')
+                  ->orWhereNull('possession_away')
+                  ->orWhereNull('yc_home')
+                  ->orWhereNull('yc_away')
+                  ->orWhereNull('rc_home')
+                  ->orWhereNull('rc_away')
+                  ->orWhereNull('saves_home')
+                  ->orWhereNull('saves_away')
+                  ->orWhereNull('tpass_home')
+                  ->orWhereNull('tpass_away')
+                  ->orWhereNull('pacc_home')
+                  ->orWhereNull('pacc_away')
+                  ->orWhereNull('pperc_home')
+                  ->orWhereNull('pperc_away')
+                  ->orWhere('sog_home', '')
+                  ->orWhere('sog_away', '')
+                  ->orWhere('sof_home', '')
+                  ->orWhere('sof_away', '')
+                  ->orWhere('sib_home', '')
+                  ->orWhere('sib_away', '')
+                  ->orWhere('sob_home', '')
+                  ->orWhere('sob_away', '')
+                  ->orWhere('tsh_home', '')
+                  ->orWhere('tsh_away', '')
+                  ->orWhere('blk_home', '')
+                  ->orWhere('blk_away', '')
+                  ->orWhere('fouls_home', '')
+                  ->orWhere('fouls_away', '')
+                  ->orWhere('corners_home', '')
+                  ->orWhere('corners_away', '')
+                  ->orWhere('offsides_home', '')
+                  ->orWhere('offsides_away', '')
+                  ->orWhere('possession_home', '')
+                  ->orWhere('possession_away', '')
+                  ->orWhere('yc_home', '')
+                  ->orWhere('yc_away', '')
+                  ->orWhere('rc_home', '')
+                  ->orWhere('rc_away', '')
+                  ->orWhere('saves_home', '')
+                  ->orWhere('saves_away', '')
+                  ->orWhere('tpass_home', '')
+                  ->orWhere('tpass_away', '')
+                  ->orWhere('pacc_home', '')
+                  ->orWhere('pacc_away', '')
+                  ->orWhere('pperc_home', '')
+                  ->orWhere('pperc_away', '');
+        })
+        ->get();
 
         foreach ($matches as $match) {
             $fixtureId = $match->fixture_id;
@@ -208,5 +275,104 @@ class FootballApiService
     }
 
 
+    public function updateValPresFields()
+{
+    // Recupera tutte le partite dalla tabella Matches che sono state disputate
+    $matches = Matches::whereNotNull('home_score')
+                      ->whereNotNull('away_score')
+                      ->get();
 
+    foreach ($matches as $match) {
+        // Recupera i livelli delle squadre di casa e trasferta
+        $homeTeam = Team::find($match->home_id);
+        $awayTeam = Team::find($match->away_id);
+
+        if ($homeTeam && $awayTeam) {
+            // Logga i valori dei livelli per debugging
+            Log::info("Fixture ID: {$match->fixture_id}, Home Team: {$homeTeam->name}, Level: {$homeTeam->level}, Away Team: {$awayTeam->name}, Level: {$awayTeam->level}");
+
+            // Verifica che i livelli non siano nulli o zero
+            if (is_numeric($homeTeam->level) && is_numeric($awayTeam->level) && $homeTeam->level > 0 && $awayTeam->level > 0) {
+                // Calcola i punteggi normalizzati usando la funzione calcolaPunteggio
+                $normalized_scores = $this->calcolaPunteggio(
+                    $match->home_score,
+                    $match->away_score,
+                    (int)$homeTeam->level,
+                    (int)$awayTeam->level
+                );
+
+                // Aggiorna i campi val_pres_h e val_pres_a con i valori calcolati
+                Matches::where('fixture_id', $match->fixture_id)->update([
+                    'val_pres_h' => $normalized_scores['home'],
+                    'val_pres_a' => $normalized_scores['away']
+                ]);
+            } else {
+                // Logga un avviso se uno dei livelli è pari a zero o non è stato trovato
+                Log::warning("Livelli non validi per la partita con Fixture ID={$match->fixture_id}. Home Level: {$homeTeam->level}, Away Level: {$awayTeam->level}");
+            }
+        } else {
+            // Logga un avviso se non riesce a trovare una delle squadre
+            Log::warning("Squadra non trovata per la partita con Fixture ID={$match->fixture_id}");
+        }
+    }
+
+    return "Campi 'val_pres_h' e 'val_pres_a' aggiornati correttamente per tutte le partite disputate.";
 }
+
+/**
+ * Calcola il punteggio di performance di due squadre, includendo un coefficiente di difficoltà
+ * basato sul livello delle squadre e normalizza il risultato per un totale di 100 punti.
+ *
+ * @param int $home_score Gol fatti dalla squadra di casa
+ * @param int $away_score Gol fatti dalla squadra in trasferta
+ * @param int $home_level Livello della squadra di casa
+ * @param int $away_level Livello della squadra in trasferta
+ * @param float $away_bonus Bonus da assegnare alla squadra in trasferta (default 2.5)
+ * @return array Punteggi normalizzati per la squadra di casa e quella in trasferta
+ */
+public function calcolaPunteggio($home_score, $away_score, $home_level, $away_level, $away_bonus = 2.5)
+{
+    // Verifica che i livelli siano validi (non zero o negativi)
+    if ($home_level <= 0 || $away_level <= 0) {
+        throw new \Exception("I livelli delle squadre devono essere maggiori di zero.");
+    }
+
+    // Calcola la differenza gol
+    $differenza_gol = $home_score - $away_score;
+
+    // Calcolo dei coefficienti di difficoltà ridotti con radice quadrata
+    $coefficiente_home = sqrt($away_level / $home_level);
+    $coefficiente_away = sqrt($home_level / $away_level);
+
+    // Calcola il punteggio grezzo per la squadra di casa
+    $punteggio_home_grezzo = 50 + (10 * $differenza_gol) + (2 * $home_score) - (2 * $away_score);
+    $punteggio_home = $punteggio_home_grezzo * $coefficiente_home;
+
+    // Calcola il punteggio grezzo per la squadra in trasferta
+    $punteggio_away_grezzo = 50 + (10 * -$differenza_gol) + (2 * $away_score) - (2 * $home_score) + $away_bonus;
+    $punteggio_away = $punteggio_away_grezzo * $coefficiente_away;
+
+    // Somma dei punteggi
+    $somma_punteggi = $punteggio_home + $punteggio_away;
+
+    // Calcola il fattore di normalizzazione per far sì che il totale sia sempre 100
+    $fattore_normalizzazione = 100 / $somma_punteggi;
+
+    // Calcola i punteggi normalizzati
+    $punteggio_home_finale = round($punteggio_home * $fattore_normalizzazione, 2);
+    $punteggio_away_finale = round($punteggio_away * $fattore_normalizzazione, 2);
+
+    // Restituisce i punteggi finali in un array
+    return [
+        'home' => $punteggio_home_finale,
+        'away' => $punteggio_away_finale
+    ];
+}
+
+
+
+
+
+    }
+
+
