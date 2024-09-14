@@ -276,98 +276,188 @@ class FootballApiService
 
 
     public function updateValPresFields()
-{
-    // Recupera tutte le partite dalla tabella Matches che sono state disputate
-    $matches = Matches::whereNotNull('home_score')
-                      ->whereNotNull('away_score')
-                      ->get();
+    {
+        // Recupera tutte le partite dalla tabella Matches che sono state disputate
+        $matches = Matches::whereNotNull('home_score')
+                          ->whereNotNull('away_score')
+                          ->get();
 
-    foreach ($matches as $match) {
-        // Recupera i livelli delle squadre di casa e trasferta
-        $homeTeam = Team::find($match->home_id);
-        $awayTeam = Team::find($match->away_id);
+        foreach ($matches as $match) {
+            // Recupera le squadre di casa e trasferta tramite le relazioni definite nel modello Matches
+            $homeTeam = $match->homeTeam;
+            $awayTeam = $match->awayTeam;
 
-        if ($homeTeam && $awayTeam) {
-            // Logga i valori dei livelli per debugging
-            Log::info("Fixture ID: {$match->fixture_id}, Home Team: {$homeTeam->name}, Level: {$homeTeam->level}, Away Team: {$awayTeam->name}, Level: {$awayTeam->level}");
+            if ($homeTeam && $awayTeam) {
+                // Recupera i livelli delle squadre
+                $homeLevel = $homeTeam->level;
+                $awayLevel = $awayTeam->level;
 
-            // Verifica che i livelli non siano nulli o zero
-            if (is_numeric($homeTeam->level) && is_numeric($awayTeam->level) && $homeTeam->level > 0 && $awayTeam->level > 0) {
-                // Calcola i punteggi normalizzati usando la funzione calcolaPunteggio
-                $normalized_scores = $this->calcolaPunteggio(
-                    $match->home_score,
-                    $match->away_score,
-                    (int)$homeTeam->level,
-                    (int)$awayTeam->level
-                );
+                // Logga i valori dei livelli per debugging
+                Log::info("Fixture ID: {$match->fixture_id}, Home Team: {$homeTeam->name}, Level: {$homeLevel}, Away Team: {$awayTeam->name}, Level: {$awayLevel}");
 
-                // Aggiorna i campi val_pres_h e val_pres_a con i valori calcolati
-                Matches::where('fixture_id', $match->fixture_id)->update([
-                    'val_pres_h' => $normalized_scores['home'],
-                    'val_pres_a' => $normalized_scores['away']
-                ]);
+                // Verifica che i livelli non siano nulli o zero
+                if (is_numeric($homeLevel) && is_numeric($awayLevel) && $homeLevel > 0 && $awayLevel > 0) {
+                    // Calcola i punteggi normalizzati usando la funzione calcolaPunteggio
+                    $normalized_scores = $this->calcolaPunteggio(
+                        $match->home_score,
+                        $match->away_score,
+                        (int)$homeLevel,
+                        (int)$awayLevel,
+                        $match->sog_home,
+                        $match->sog_away,
+                        $match->tsh_home,
+                        $match->tsh_away,
+                        $match->possession_home,
+                        $match->possession_away,
+                        $match->pperc_home,
+                        $match->pperc_away,
+                        $match->corners_home,
+                        $match->corners_away
+                    );
+
+                    // Aggiorna i campi val_pres_h e val_pres_a con i valori calcolati
+                    $match->update([
+                        'val_pres_h' => $normalized_scores['home'],
+                        'val_pres_a' => $normalized_scores['away']
+                    ]);
+                } else {
+                    // Logga un avviso se uno dei livelli è pari a zero o non è stato trovato
+                    Log::warning("Livelli non validi per la partita con Fixture ID={$match->fixture_id}. Home Level: {$homeLevel}, Away Level: {$awayLevel}");
+                }
             } else {
-                // Logga un avviso se uno dei livelli è pari a zero o non è stato trovato
-                Log::warning("Livelli non validi per la partita con Fixture ID={$match->fixture_id}. Home Level: {$homeTeam->level}, Away Level: {$awayTeam->level}");
+                // Logga un avviso se non riesce a trovare una delle squadre
+                Log::warning("Squadra non trovata per la partita con Fixture ID={$match->fixture_id}");
             }
-        } else {
-            // Logga un avviso se non riesce a trovare una delle squadre
-            Log::warning("Squadra non trovata per la partita con Fixture ID={$match->fixture_id}");
         }
+
+        return "Campi 'val_pres_h' e 'val_pres_a' aggiornati correttamente per tutte le partite disputate.";
     }
 
-    return "Campi 'val_pres_h' e 'val_pres_a' aggiornati correttamente per tutte le partite disputate.";
-}
 
-/**
- * Calcola il punteggio di performance di due squadre, includendo un coefficiente di difficoltà
- * basato sul livello delle squadre e normalizza il risultato per un totale di 100 punti.
- *
- * @param int $home_score Gol fatti dalla squadra di casa
- * @param int $away_score Gol fatti dalla squadra in trasferta
- * @param int $home_level Livello della squadra di casa
- * @param int $away_level Livello della squadra in trasferta
- * @param float $away_bonus Bonus da assegnare alla squadra in trasferta (default 2.5)
- * @return array Punteggi normalizzati per la squadra di casa e quella in trasferta
- */
-public function calcolaPunteggio($home_score, $away_score, $home_level, $away_level, $away_bonus = 2.5)
-{
-    // Verifica che i livelli siano validi (non zero o negativi)
-    if ($home_level <= 0 || $away_level <= 0) {
-        throw new \Exception("I livelli delle squadre devono essere maggiori di zero.");
+
+
+    public function calcolaPunteggio(
+        $home_score, $away_score,
+        $home_level, $away_level,
+        $sog_home, $sog_away,
+        $tsh_home, $tsh_away,
+        $possession_home, $possession_away,
+        $pperc_home, $pperc_away,
+        $corners_home, $corners_away
+    )
+    {
+        // Funzione helper per convertire percentuali in numeri
+        $convertPercentageStringToFloat = function($percentage_string) {
+            // Rimuove il simbolo '%' e altri caratteri non numerici
+            $number = preg_replace('/[^0-9.]/', '', $percentage_string);
+            // Converte la stringa in un numero float
+            return floatval($number);
+        };
+
+        // Convertire 'possession' e 'pperc' da stringhe a numeri
+        $possession_home = $convertPercentageStringToFloat($possession_home);
+        $possession_away = $convertPercentageStringToFloat($possession_away);
+        $pperc_home = $convertPercentageStringToFloat($pperc_home);
+        $pperc_away = $convertPercentageStringToFloat($pperc_away);
+
+        // Verifica che le variabili numeriche siano valide
+        $possession_home = is_numeric($possession_home) ? $possession_home : 0;
+        $possession_away = is_numeric($possession_away) ? $possession_away : 0;
+        $pperc_home = is_numeric($pperc_home) ? $pperc_home : 0;
+        $pperc_away = is_numeric($pperc_away) ? $pperc_away : 0;
+
+        // Calcolo del Bonus di Difficoltà (BD)
+        $BD_home = ($away_level - $home_level) / 15;
+        $BD_away = ($home_level - $away_level) / 15;
+
+        // Calcolo del Punteggio Base (PB)
+        $PB_home = 50 + $BD_home;
+        $PB_away = 50 + $BD_away;
+
+        // Calcolo del Fattore Gol (FG)
+        $FG_home = ($home_score - $away_score) * 10;
+        $FG_away = ($away_score - $home_score) * 10;
+
+        // Calcolo del Punteggio Principale (PP)
+        $PP_home = $PB_home + $FG_home;
+        $PP_away = $PB_away + $FG_away;
+
+        // Calcolo delle somme totali per le statistiche
+        $total_sog = $sog_home + $sog_away;
+        $total_tsh = $tsh_home + $tsh_away;
+        $total_corner = $corners_home + $corners_away;
+        $total_possession = $possession_home + $possession_away;
+        $total_pperc = $pperc_home + $pperc_away;
+
+        // Evita divisioni per zero
+        $total_sog = $total_sog ?: 1;
+        $total_tsh = $total_tsh ?: 1;
+        $total_corner = $total_corner ?: 1;
+        $total_possession = $total_possession ?: 1;
+        $total_pperc = $total_pperc ?: 1;
+
+        // Calcolo delle percentuali per la squadra di casa
+        $sog_perc_home = $sog_home / $total_sog;
+        $tsh_perc_home = $tsh_home / $total_tsh;
+        $corner_perc_home = $corners_home / $total_corner;
+        $possession_perc_home = $possession_home / $total_possession;
+        $pperc_perc_home = $pperc_home / $total_pperc;
+
+        // Calcolo delle percentuali per la squadra in trasferta
+        $sog_perc_away = $sog_away / $total_sog;
+        $tsh_perc_away = $tsh_away / $total_tsh;
+        $corner_perc_away = $corners_away / $total_corner;
+        $possession_perc_away = $possession_away / $total_possession;
+        $pperc_perc_away = $pperc_away / $total_pperc;
+
+        // Pesi assegnati alle variabili
+        $weights = [
+            'sog' => 0.25,
+            'tsh' => 0.25,
+            'possession' => 0.20,
+            'pperc' => 0.15,
+            'corner' => 0.15,
+        ];
+
+        // Calcolo del Punteggio Statistico (PS) per la squadra di casa
+        $PS_home = 20 * (
+            ($sog_perc_home * $weights['sog']) +
+            ($tsh_perc_home * $weights['tsh']) +
+            ($possession_perc_home * $weights['possession']) +
+            ($pperc_perc_home * $weights['pperc']) +
+            ($corner_perc_home * $weights['corner'])
+        );
+
+        // Calcolo del Punteggio Statistico (PS) per la squadra in trasferta
+        $PS_away = 20 * (
+            ($sog_perc_away * $weights['sog']) +
+            ($tsh_perc_away * $weights['tsh']) +
+            ($possession_perc_away * $weights['possession']) +
+            ($pperc_perc_away * $weights['pperc']) +
+            ($corner_perc_away * $weights['corner'])
+        );
+
+        // Calcolo del Punteggio Finale (PF)
+        $PF_home = $PP_home + $PS_home;
+        $PF_away = $PP_away + $PS_away;
+
+        // Limita i punteggi tra 1 e 100
+        $PF_home = max(1, min($PF_home, 100));
+        $PF_away = max(1, min($PF_away, 100));
+
+        // Arrotonda i punteggi a due decimali
+        $PF_home = round($PF_home, 2);
+        $PF_away = round($PF_away, 2);
+
+        // Restituisce i punteggi finali in un array
+        return [
+            'home' => $PF_home,
+            'away' => $PF_away
+        ];
     }
 
-    // Calcola la differenza gol
-    $differenza_gol = $home_score - $away_score;
 
-    // Calcolo dei coefficienti di difficoltà ridotti con radice quadrata
-    $coefficiente_home = sqrt($away_level / $home_level);
-    $coefficiente_away = sqrt($home_level / $away_level);
 
-    // Calcola il punteggio grezzo per la squadra di casa
-    $punteggio_home_grezzo = 50 + (10 * $differenza_gol) + (2 * $home_score) - (2 * $away_score);
-    $punteggio_home = $punteggio_home_grezzo * $coefficiente_home;
-
-    // Calcola il punteggio grezzo per la squadra in trasferta
-    $punteggio_away_grezzo = 50 + (10 * -$differenza_gol) + (2 * $away_score) - (2 * $home_score) + $away_bonus;
-    $punteggio_away = $punteggio_away_grezzo * $coefficiente_away;
-
-    // Somma dei punteggi
-    $somma_punteggi = $punteggio_home + $punteggio_away;
-
-    // Calcola il fattore di normalizzazione per far sì che il totale sia sempre 100
-    $fattore_normalizzazione = 100 / $somma_punteggi;
-
-    // Calcola i punteggi normalizzati
-    $punteggio_home_finale = round($punteggio_home * $fattore_normalizzazione, 2);
-    $punteggio_away_finale = round($punteggio_away * $fattore_normalizzazione, 2);
-
-    // Restituisce i punteggi finali in un array
-    return [
-        'home' => $punteggio_home_finale,
-        'away' => $punteggio_away_finale
-    ];
-}
 
 
 
