@@ -35,13 +35,11 @@ class MatchController extends Controller
     $teams = Team::where('league_id', $leagueId)->get();
 
     // Calcola punti e ordina per classifica
-    $teams = $teams->map(function ($team) {
-        $team->points = ($team->t_wins * 3) + $team->t_draws;
-        $team->goal_difference = $team->t_goals_for - $team->t_goals_against;
-        return $team;
-    })->sortByDesc(function ($team) {
-        return [$team->points, $team->goal_difference, $team->t_goals_for];
-    })->values();
+// Richiama i punti e ordina per classifica
+$teams = $teams->sortByDesc(function ($team) {
+    return [$team->points, $team->goal_difference, $team->t_goals_for];
+})->values();
+
 
     // Trova le posizioni attuali delle due squadre
     $homeTeamPosition = $teams->search(function ($team) use ($homeTeamData) {

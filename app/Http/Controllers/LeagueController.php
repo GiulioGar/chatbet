@@ -104,14 +104,10 @@ class LeagueController extends Controller
         $teams = $this->getTeamsByLeagueId($leagueId) ?? collect(); // Recupera le squadre
         $teamCount = $teams->count();
 
-        // Calcola i punti per ciascuna squadra e ordina
-        $teams = $teams->map(function ($team) {
-            $team->points = ($team->t_wins * 3) + $team->t_draws;
-            $team->goal_difference = $team->t_goals_for - $team->t_goals_against;
-            return $team;
-        })->sortByDesc(function ($team) {
-            return [$team->points, $team->goal_difference, $team->t_goals_for];
-        });
+// Richiama i punti e ordina le squadre
+$teams = $teams->sortByDesc(function ($team) {
+    return [$team->points, $team->goal_difference, $team->t_goals_for];
+});
 
         // Calcola le statistiche generali
         $totalMatches = $matches->count();

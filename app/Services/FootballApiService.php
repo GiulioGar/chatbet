@@ -38,86 +38,91 @@ class FootballApiService
         ])->get($url, $params);
 
         if ($response->successful()) {
+            Log::info("Chiamata API riuscita a {$url}", ['params' => $params]);
             return $response->json();
         }
 
+        Log::error("Errore nella chiamata API a {$url}", ['params' => $params, 'status' => $response->status()]);
         return null;
     }
 
     public function updateAllMatches()
-{
-    $season = 2024; // Modifica secondo la stagione corrente
-    $updatedMatches = 0; // Contatore per il numero di match aggiornati
+    {
+        $season = 2024; // Modifica secondo la stagione corrente
+        $updatedMatches = 0; // Contatore per il numero di match aggiornati
 
-    foreach ($this->leagues as $leagueId => $leagueName) {
-        $response = $this->get('/fixtures', [
-            'league' => $leagueId,
-            'season' => $season,
-        ]);
+        foreach ($this->leagues as $leagueId => $leagueName) {
+            Log::info("Inizio aggiornamento partite per la lega: {$leagueName}");
 
-        if (isset($response['response'])) {
-            foreach ($response['response'] as $matchData) {
-                $fixtureId = $matchData['fixture']['id'];
-                $homeTeamId = $matchData['teams']['home']['id'];
-                $awayTeamId = $matchData['teams']['away']['id'];
+            $response = $this->get('/fixtures', [
+                'league' => $leagueId,
+                'season' => $season,
+            ]);
 
-                $matchDateTime = Carbon::parse($matchData['fixture']['date'])->setTimezone('Europe/Rome');
-                $matchDate = $matchDateTime->format('Y-m-d');
-                $matchTime = $matchDateTime->format('H:i:s');
+            if (isset($response['response'])) {
+                foreach ($response['response'] as $matchData) {
+                    $fixtureId = $matchData['fixture']['id'];
+                    $homeTeamId = $matchData['teams']['home']['id'];
+                    $awayTeamId = $matchData['teams']['away']['id'];
 
-                if ($matchTime === '00:00:00' || empty($matchTime)) {
-                    $matchTime = '15:00:00';
-                }
+                    $matchDateTime = Carbon::parse($matchData['fixture']['date'])->setTimezone('Europe/Rome');
+                    $matchDate = $matchDateTime->format('Y-m-d');
+                    $matchTime = $matchDateTime->format('H:i:s');
 
-                // Cerca se la partita esiste già nel database con lo stesso fixtureId
-                $existingMatch = Matches::where('fixture_id', $fixtureId)->first();
+                    if ($matchTime === '00:00:00' || empty($matchTime)) {
+                        $matchTime = '15:00:00';
+                    }
 
-                if ($existingMatch) {
-                    // Se la partita esiste, aggiorna solo i campi necessari
-                    $existingMatch->update([
-                        'match_date' => $matchDate,
-                        'match_time' => $matchTime,
-                        'home_score' => $matchData['goals']['home'],
-                        'away_score' => $matchData['goals']['away'],
-                        'home_ht' => $matchData['score']['halftime']['home'],
-                        'away_ht' => $matchData['score']['halftime']['away'],
-                        'home_ft' => $matchData['score']['fulltime']['home'],
-                        'away_ft' => $matchData['score']['fulltime']['away'],
-                        'referee' => $matchData['fixture']['referee']
-                    ]);
+                    // Cerca se la partita esiste già nel database con lo stesso fixtureId
+                    $existingMatch = Matches::where('fixture_id', $fixtureId)->first();
+
+                    if ($existingMatch) {
+                        // Se la partita esiste, aggiorna solo i campi necessari
+                        Log::info("Aggiornamento partita esistente: fixture ID {$fixtureId}");
+
+                        $existingMatch->update([
+                            'match_date' => $matchDate,
+                            'match_time' => $matchTime,
+                            'home_score' => $matchData['goals']['home'],
+                            'away_score' => $matchData['goals']['away'],
+                            'home_ht' => $matchData['score']['halftime']['home'],
+                            'away_ht' => $matchData['score']['halftime']['away'],
+                            'home_ft' => $matchData['score']['fulltime']['home'],
+                            'away_ft' => $matchData['score']['fulltime']['away'],
+                            'referee' => $matchData['fixture']['referee']
+                        ]);
+                    } else {
+                        // Se la partita non esiste, crea un nuovo record
+                        Log::info("Creazione nuova partita: fixture ID {$fixtureId}");
+
+                        Matches::create([
+                            'fixture_id' => $fixtureId,
+                            'league_id' => $leagueId,
+                            'home_id' => $homeTeamId,
+                            'away_id' => $awayTeamId,
+                            'match_date' => $matchDate,
+                            'match_time' => $matchTime,
+                            'home_score' => $matchData['goals']['home'],
+                            'away_score' => $matchData['goals']['away'],
+                            'home_ht' => $matchData['score']['halftime']['home'],
+                            'away_ht' => $matchData['score']['halftime']['away'],
+                            'home_ft' => $matchData['score']['fulltime']['home'],
+                            'away_ft' => $matchData['score']['fulltime']['away'],
+                            'referee' => $matchData['fixture']['referee']
+                        ]);
+                    }
 
                     // Incrementa il contatore degli aggiornamenti
                     $updatedMatches++;
-                } else {
-                    // Se la partita non esiste, crea un nuovo record
-                    Matches::create([
-                        'fixture_id' => $fixtureId,
-                        'league_id' => $leagueId,
-                        'home_id' => $homeTeamId,
-                        'away_id' => $awayTeamId,
-                        'match_date' => $matchDate,
-                        'match_time' => $matchTime,
-                        'home_score' => $matchData['goals']['home'],
-                        'away_score' => $matchData['goals']['away'],
-                        'home_ht' => $matchData['score']['halftime']['home'],
-                        'away_ht' => $matchData['score']['halftime']['away'],
-                        'home_ft' => $matchData['score']['fulltime']['home'],
-                        'away_ft' => $matchData['score']['fulltime']['away'],
-                        'referee' => $matchData['fixture']['referee']
-                    ]);
-
-                    // Incrementa il contatore degli aggiornamenti
-                    $updatedMatches++;
                 }
+            } else {
+                Log::warning("Nessuna risposta API per la lega: {$leagueName}");
             }
         }
+
+        Log::info("Aggiornamento completato: {$updatedMatches} partite aggiornate.");
+        return $updatedMatches;
     }
-
-    // Ritorna il numero di match aggiornati
-    return $updatedMatches;
-}
-
-
 
     public function updateMatchStatistics()
     {
@@ -125,80 +130,21 @@ class FootballApiService
         $updatedMatches = 0; // Contatore per il numero di match aggiornati
 
         $matches = Matches::where(function ($query) use ($now) {
-            $query->where('match_date', '<', $now->format('Y-m-d'))
-                  ->orWhere(function ($query) use ($now) {
-                      $query->where('match_date', '=', $now->format('Y-m-d'))
-                            ->where('match_time', '<=', $now->format('H:i:s'));
-                  });
-        })
-        ->where(function ($query) {
-            // Aggiungi la condizione per controllare se uno dei campi è null o vuoto
-            $query->whereNull('sog_home')
-                  ->orWhereNull('sog_away')
-                  ->orWhereNull('sof_home')
-                  ->orWhereNull('sof_away')
-                  ->orWhereNull('sib_home')
-                  ->orWhereNull('sib_away')
-                  ->orWhereNull('sob_home')
-                  ->orWhereNull('sob_away')
-                  ->orWhereNull('tsh_home')
-                  ->orWhereNull('tsh_away')
-                  ->orWhereNull('blk_home')
-                  ->orWhereNull('blk_away')
-                  ->orWhereNull('fouls_home')
-                  ->orWhereNull('fouls_away')
-                  ->orWhereNull('corners_home')
-                  ->orWhereNull('corners_away')
-                  ->orWhereNull('offsides_home')
-                  ->orWhereNull('offsides_away')
-                  ->orWhereNull('possession_home')
-                  ->orWhereNull('possession_away')
-                  ->orWhereNull('yc_home')
-                  ->orWhereNull('yc_away')
-                  ->orWhereNull('rc_home')
-                  ->orWhereNull('rc_away')
-                  ->orWhereNull('saves_home')
-                  ->orWhereNull('saves_away')
-                  ->orWhereNull('tpass_home')
-                  ->orWhereNull('tpass_away')
-                  ->orWhereNull('pacc_home')
-                  ->orWhereNull('pacc_away')
-                  ->orWhereNull('pperc_home')
-                  ->orWhereNull('pperc_away')
-                  ->orWhere('sog_home', '')
-                  ->orWhere('sog_away', '')
-                  ->orWhere('sof_home', '')
-                  ->orWhere('sof_away', '')
-                  ->orWhere('sib_home', '')
-                  ->orWhere('sib_away', '')
-                  ->orWhere('sob_home', '')
-                  ->orWhere('sob_away', '')
-                  ->orWhere('tsh_home', '')
-                  ->orWhere('tsh_away', '')
-                  ->orWhere('blk_home', '')
-                  ->orWhere('blk_away', '')
-                  ->orWhere('fouls_home', '')
-                  ->orWhere('fouls_away', '')
-                  ->orWhere('corners_home', '')
-                  ->orWhere('corners_away', '')
-                  ->orWhere('offsides_home', '')
-                  ->orWhere('offsides_away', '')
-                  ->orWhere('possession_home', '')
-                  ->orWhere('possession_away', '')
-                  ->orWhere('yc_home', '')
-                  ->orWhere('yc_away', '')
-                  ->orWhere('rc_home', '')
-                  ->orWhere('rc_away', '')
-                  ->orWhere('saves_home', '')
-                  ->orWhere('saves_away', '')
-                  ->orWhere('tpass_home', '')
-                  ->orWhere('tpass_away', '')
-                  ->orWhere('pacc_home', '')
-                  ->orWhere('pacc_away', '')
-                  ->orWhere('pperc_home', '')
-                  ->orWhere('pperc_away', '');
-        })
-        ->get();
+                $query->where('match_date', '<', $now->format('Y-m-d'))
+                      ->orWhere(function ($query) use ($now) {
+                          $query->where('match_date', '=', $now->format('Y-m-d'))
+                                ->where('match_time', '<=', $now->format('H:i:s'));
+                      });
+            })
+            ->where(function ($query) {
+                $query->whereNull('sog_home')
+                      ->orWhereNull('sog_away')
+                      ->orWhereNull('expected_goalsH')
+                      ->orWhereNull('goals_preventedH')
+                      ->orWhereNull('expected_goalsA')
+                      ->orWhereNull('goals_preventedA');
+            })
+            ->get();
 
         foreach ($matches as $match) {
             $fixtureId = $match->fixture_id;
@@ -227,6 +173,13 @@ class FootballApiService
                         return null;
                     };
 
+                    // Log per visualizzare i dati richiamati
+                    Log::info("Statistiche per fixture ID {$fixtureId}", [
+                        'homeStats' => $homeStats,
+                        'awayStats' => $awayStats
+                    ]);
+
+                    // Aggiorna i campi esistenti più i nuovi campi per expected goals e goals prevented
                     $match->update([
                         'sog_home' => $extractValue('Shots on Goal', $homeStats),
                         'sog_away' => $extractValue('Shots on Goal', $awayStats),
@@ -259,18 +212,25 @@ class FootballApiService
                         'pacc_home' => $extractValue('Passes accurate', $homeStats),
                         'pacc_away' => $extractValue('Passes accurate', $awayStats),
                         'pperc_home' => $extractValue('Passes %', $homeStats),
-                        'pperc_away' => $extractValue('Passes %', $awayStats)
+                        'pperc_away' => $extractValue('Passes %', $awayStats),
+                        // Aggiunta dei nuovi campi
+                        'expected_goalsH' => $extractValue('Expected Goals', $homeStats),
+                        'goals_preventedH' => $extractValue('Goals Prevented', $homeStats),
+                        'expected_goalsA' => $extractValue('Expected Goals', $awayStats),
+                        'goals_preventedA' => $extractValue('Goals Prevented', $awayStats),
                     ]);
 
                     // Incrementa il contatore se un match è stato aggiornato
                     $updatedMatches++;
+                } else {
+                    Log::warning("Nessuna statistica disponibile per la partita con fixture ID {$fixtureId}");
                 }
             } catch (\Exception $e) {
-                // Gestione dell'eccezione in caso di errore durante l'aggiornamento
+                Log::error("Errore nell'aggiornamento delle statistiche per la partita con fixture ID {$fixtureId}: " . $e->getMessage());
             }
         }
 
-        // Ritorna il numero di match aggiornati
+        Log::info("Aggiornamento delle statistiche completato: {$updatedMatches} partite aggiornate.");
         return $updatedMatches;
     }
 

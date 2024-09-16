@@ -55,7 +55,11 @@ class Matches extends Model
         'pacc_away',
         'pperc_home',
         'pperc_away',
-        'val_pres_h', 'val_pres_a'
+        'val_pres_h', 'val_pres_a',
+        'expected_goalsH',
+        'goals_preventedH',
+        'expected_goalsA',
+        'goals_preventedA'
     ];
 
     public function homeTeam()

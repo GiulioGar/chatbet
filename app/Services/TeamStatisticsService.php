@@ -29,7 +29,9 @@ class TeamStatisticsService
                 'h_corners' => 0, 'a_corners' => 0, 'h_yellow_cards' => 0, 'a_yellow_cards' => 0,
                 'h_red_cards' => 0, 'a_red_cards' => 0, 'h_ball_possession' => 0, 'a_ball_possession' => 0,
                 't_over_0_5_ht' => 0, 't_over_1_5_ht' => 0, 't_over_2_5_ht' => 0, 't_over_3_5_ht' => 0, 't_gg_ht' => 0,
-                't_over_0_5_ft' => 0, 't_over_1_5_ft' => 0, 't_over_2_5_ft' => 0, 't_over_3_5_ft' => 0, 't_gg_ft' => 0
+                't_over_0_5_ft' => 0, 't_over_1_5_ft' => 0, 't_over_2_5_ft' => 0, 't_over_3_5_ft' => 0, 't_gg_ft' => 0,
+                'points' => 0, // Nuovo campo per i punti
+                'goal_difference' => 0 // Nuovo campo per la differenza reti
             ];
 
             $matches = Matches::where(function ($query) use ($team) {
@@ -159,15 +161,20 @@ class TeamStatisticsService
                 $teamStats['t_ball_possession'] = $teamStats['t_ball_possession'] / $teamStats['t_played'];
             }
 
+            // Calcolo dei punti e della differenza reti
+            $teamStats['points'] = ($teamStats['t_wins'] * 3) + $teamStats['t_draws'];
+            $teamStats['goal_difference'] = $teamStats['t_goals_for'] - $teamStats['t_goals_against'];
+
+            // Log per capire i valori prima dell'update
+            Log::info("Aggiornamento statistiche per la squadra {$team->name}: Punti = {$teamStats['points']}, Differenza reti = {$teamStats['goal_difference']}");
+
             // Aggiornamento nel database
             try {
                 $team->update($teamStats);
+                Log::info("Statistiche salvate correttamente per la squadra: {$team->name}");
             } catch (\Exception $e) {
                 Log::error("Errore durante l'aggiornamento delle statistiche per la squadra {$team->name}: {$e->getMessage()}");
             }
-
-            Log::debug("Statistiche aggiornate per la squadra: {$team->name}", $teamStats);
         }
     }
 }
-

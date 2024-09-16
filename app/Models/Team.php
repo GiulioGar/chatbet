@@ -25,8 +25,8 @@ class Team extends Model
         'h_ball_possession', 'a_ball_possession',
         't_over_0_5_ht', 't_over_0_5_ft', 't_over_1_5_ht', 't_over_1_5_ft',
         't_over_2_5_ht', 't_over_2_5_ft', 't_over_3_5_ht', 't_over_3_5_ft',
-        't_gg_ht', 't_gg_ft','points',
-        'goal_difference',"level"
+        't_gg_ht', 't_gg_ft','level', 'points',
+        'goal_difference',
     ];
 
 
