@@ -129,6 +129,7 @@ class FootballApiService
         $now = Carbon::now()->setTimezone('Europe/Rome');
         $updatedMatches = 0; // Contatore per il numero di match aggiornati
 
+        // Recupera le partite passate e in corso senza statistiche aggiornate
         $matches = Matches::where(function ($query) use ($now) {
                 $query->where('match_date', '<', $now->format('Y-m-d'))
                       ->orWhere(function ($query) use ($now) {
@@ -137,6 +138,7 @@ class FootballApiService
                       });
             })
             ->where(function ($query) {
+                // Condizione per assicurarsi che i campi siano null o vuoti
                 $query->whereNull('sog_home')
                       ->orWhereNull('sog_away')
                       ->orWhereNull('expected_goalsH')
@@ -150,12 +152,14 @@ class FootballApiService
             $fixtureId = $match->fixture_id;
 
             try {
+                // Chiamata API per recuperare le statistiche della partita
                 $statistics = $this->get('/fixtures/statistics', ['fixture' => $fixtureId]);
 
                 if (isset($statistics['response']) && !empty($statistics['response'])) {
                     $homeStats = [];
                     $awayStats = [];
 
+                    // Assegna le statistiche per le squadre di casa e trasferta
                     foreach ($statistics['response'] as $teamStats) {
                         if ($teamStats['team']['id'] == $match->home_id) {
                             $homeStats = $teamStats['statistics'];
@@ -164,6 +168,7 @@ class FootballApiService
                         }
                     }
 
+                    // Funzione per estrarre il valore della statistica per un tipo specifico
                     $extractValue = function ($type, $stats) {
                         foreach ($stats as $stat) {
                             if ($stat['type'] == $type) {
@@ -173,13 +178,7 @@ class FootballApiService
                         return null;
                     };
 
-                    // Log per visualizzare i dati richiamati
-                    Log::info("Statistiche per fixture ID {$fixtureId}", [
-                        'homeStats' => $homeStats,
-                        'awayStats' => $awayStats
-                    ]);
-
-                    // Aggiorna i campi esistenti più i nuovi campi per expected goals e goals prevented
+                    // Aggiornamento dei dati nel database
                     $match->update([
                         'sog_home' => $extractValue('Shots on Goal', $homeStats),
                         'sog_away' => $extractValue('Shots on Goal', $awayStats),
@@ -213,12 +212,15 @@ class FootballApiService
                         'pacc_away' => $extractValue('Passes accurate', $awayStats),
                         'pperc_home' => $extractValue('Passes %', $homeStats),
                         'pperc_away' => $extractValue('Passes %', $awayStats),
-                        // Aggiunta dei nuovi campi
-                        'expected_goalsH' => $extractValue('Expected Goals', $homeStats),
-                        'goals_preventedH' => $extractValue('Goals Prevented', $homeStats),
-                        'expected_goalsA' => $extractValue('Expected Goals', $awayStats),
-                        'goals_preventedA' => $extractValue('Goals Prevented', $awayStats),
+                        // Aggiungi i nuovi campi
+                        'expected_goalsH' => $extractValue('expected_goals', $homeStats),
+                        'goals_preventedH' => $extractValue('goals_prevented', $homeStats),
+                        'expected_goalsA' => $extractValue('expected_goals', $awayStats),
+                        'goals_preventedA' => $extractValue('goals_prevented', $awayStats),
                     ]);
+
+                    // Log per verificare se i dati sono stati aggiornati correttamente
+                    Log::info("Statistiche aggiornate per la partita con fixture ID {$fixtureId}");
 
                     // Incrementa il contatore se un match è stato aggiornato
                     $updatedMatches++;
@@ -233,6 +235,7 @@ class FootballApiService
         Log::info("Aggiornamento delle statistiche completato: {$updatedMatches} partite aggiornate.");
         return $updatedMatches;
     }
+
 
 
     public function updateValPresFields()

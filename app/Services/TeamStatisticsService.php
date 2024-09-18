@@ -5,12 +5,14 @@ namespace App\Services;
 use App\Models\Matches;
 use App\Models\Team;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\DB;
+
 
 class TeamStatisticsService
 {
     public function updateTeamStatistics()
     {
-        $teams = Team::all();
+        $teams = Team::where('league_id', '>', 0)->get();
 
         foreach ($teams as $team) {
             $teamStats = [
@@ -31,7 +33,9 @@ class TeamStatisticsService
                 't_over_0_5_ht' => 0, 't_over_1_5_ht' => 0, 't_over_2_5_ht' => 0, 't_over_3_5_ht' => 0, 't_gg_ht' => 0,
                 't_over_0_5_ft' => 0, 't_over_1_5_ft' => 0, 't_over_2_5_ft' => 0, 't_over_3_5_ft' => 0, 't_gg_ft' => 0,
                 'points' => 0, // Nuovo campo per i punti
-                'goal_difference' => 0 // Nuovo campo per la differenza reti
+                'goal_difference' => 0, // Nuovo campo per la differenza reti
+                'xg' => 0, // Nuovo campo per Expected Goals
+                'prevented' => 0 // Nuovo campo per Goals Prevented
             ];
 
             $matches = Matches::where(function ($query) use ($team) {
@@ -40,7 +44,16 @@ class TeamStatisticsService
                 })
                 ->whereNotNull('home_score')
                 ->whereNotNull('away_score')
+                ->where('league_id', '>', 0)
                 ->get();
+
+            // Variabili per xG e goals prevented
+            $homeXgTotal = 0;
+            $awayXgTotal = 0;
+            $homePreventedTotal = 0;
+            $awayPreventedTotal = 0;
+            $homeMatchesCount = 0;
+            $awayMatchesCount = 0;
 
             foreach ($matches as $match) {
                 $isHome = $match->home_id == $team->team_id;
@@ -57,7 +70,18 @@ class TeamStatisticsService
                 $isHome ? $teamStats['h_goals_for'] += $goalsFor : $teamStats['a_goals_for'] += $goalsFor;
                 $isHome ? $teamStats['h_goals_against'] += $goalsAgainst : $teamStats['a_goals_against'] += $goalsAgainst;
 
-                // Incrementa i tiri
+                // Calcolo Expected Goals e Goals Prevented
+                if ($isHome && !is_null($match->expected_goalsH)) {
+                    $homeXgTotal += $match->expected_goalsH;
+                    $homePreventedTotal += $match->goals_preventedH;
+                    $homeMatchesCount++;
+                } elseif (!$isHome && !is_null($match->expected_goalsA)) {
+                    $awayXgTotal += $match->expected_goalsA;
+                    $awayPreventedTotal += $match->goals_preventedA;
+                    $awayMatchesCount++;
+                }
+
+                // Incrementa le altre statistiche (tiri, parate, falli, ecc.)
                 $shotsOnGoal = $isHome ? $match->sog_home : $match->sog_away;
                 if (is_numeric($shotsOnGoal)) {
                     $teamStats['t_shots_on_goal'] += $shotsOnGoal;
@@ -125,7 +149,6 @@ class TeamStatisticsService
                 } elseif ($goalsFor < $goalsAgainst) {
                     $teamStats['t_losses']++;
                     $isHome ? $teamStats['h_losses']++ : $teamStats['a_losses']++;
-
                 } else {
                     $teamStats['t_draws']++;
                     $isHome ? $teamStats['h_draws']++ : $teamStats['a_draws']++;
@@ -165,13 +188,26 @@ class TeamStatisticsService
             $teamStats['points'] = ($teamStats['t_wins'] * 3) + $teamStats['t_draws'];
             $teamStats['goal_difference'] = $teamStats['t_goals_for'] - $teamStats['t_goals_against'];
 
+            // Calcolo della media di Expected Goals (xG)
+            $totalXgMatches = $homeMatchesCount + $awayMatchesCount;
+            $xg = ($totalXgMatches > 0) ? ($homeXgTotal + $awayXgTotal) / $totalXgMatches : 0;
+            $teamStats['xg'] = round($xg, 2);
+
+
+            // Somma dei Goals Prevented
+            $totalPrevented = $homePreventedTotal + $awayPreventedTotal;
+            $teamStats['prevented'] = round($totalPrevented, 2);
+
             // Log per capire i valori prima dell'update
-            Log::info("Aggiornamento statistiche per la squadra {$team->name}: Punti = {$teamStats['points']}, Differenza reti = {$teamStats['goal_difference']}");
+            Log::info("Aggiornamento xG e Prevented per la squadra {$team->name}: xG = {$teamStats['xg']}, Goals Prevented = {$teamStats['prevented']}");
 
             // Aggiornamento nel database
             try {
-                $team->update($teamStats);
-                Log::info("Statistiche salvate correttamente per la squadra: {$team->name}");
+                $result = $team->forceFill($teamStats)->save();
+                if (!$result) {
+                    Log::error("Update fallito per il team {$team->name}");
+                }
+
             } catch (\Exception $e) {
                 Log::error("Errore durante l'aggiornamento delle statistiche per la squadra {$team->name}: {$e->getMessage()}");
             }
