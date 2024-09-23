@@ -57,6 +57,7 @@
                     <div class="form-box d-flex align-items-center justify-content-center">
                         <div class="text-dark p-1 mb-1 text-center"><b>{{ $awayTeamPosition }}°</b></div>
                         <span class="badge bg-success text-white ml-2 infopoint">{{ $awayTeam->points }} Punti</span>
+
                     </div>
 
                     <div class="form-run-neo d-flex justify-content-end">
@@ -91,7 +92,7 @@
 
    <!-- Header -->
    <div class="card-custom">
-    <div class="header">Statistiche partita</div>
+    <div class="header">La previsione</div>
 
     <!-- Squadra e Percentuali -->
     <div class="row-team">
