@@ -17,7 +17,7 @@ class MatchController extends Controller
         $this->leagueController = new LeagueController();
     }
 
-    public function showStatistics($homeTeam, $awayTeam)
+public function showStatistics($homeTeam, $awayTeam)
 {
     // Recupera le squadre dal database
     $homeTeamData = Team::where('name', $homeTeam)->first();
@@ -63,6 +63,9 @@ $teams = $teams->sortByDesc(function ($team) {
     $homeTeamLastFive = $this->getLastFiveMatches($homeTeamData->team_id);
     $awayTeamLastFive = $this->getLastFiveMatches($awayTeamData->team_id);
 
+     // Calcola le probabilità di vittoria, pareggio e sconfitta
+     $matchProbabilities = $this->calculateMatchProbabilities($homeTeamData, $awayTeamData);
+
     // Passa i dati alla vista
     return view('matches.statMatch', [
         'homeTeam' => $homeTeamData,
@@ -74,6 +77,7 @@ $teams = $teams->sortByDesc(function ($team) {
         'awayTeamLastFive' => $awayTeamLastFive,
         'leagueName' => $leagueName, // Passa il nome della lega alla vista
         'teams' => $teams, // Passa la classifica delle squadre alla vista
+        'matchProbabilities' => $matchProbabilities, // Passa le probabilità alla vista
     ]);
 }
 
@@ -90,6 +94,164 @@ $teams = $teams->sortByDesc(function ($team) {
                 ->take(5)
                 ->get();
     }
+
+    private function calculateMatchProbabilities($homeTeamData, $awayTeamData)
+    {
+        // Dati delle squadre
+        $homeLevel = $homeTeamData->level;
+        $awayLevel = $awayTeamData->level;
+
+        $homeForma = $homeTeamData->forma;
+        $awayForma = $awayTeamData->forma;
+
+        $homePoints = $homeTeamData->points;
+        $awayPoints = $awayTeamData->points;
+
+        $homeGoalDifference = $homeTeamData->goal_difference;
+        $awayGoalDifference = $awayTeamData->goal_difference;
+
+        $homePossession = $homeTeamData->t_ball_possession;
+        $awayPossession = $awayTeamData->t_ball_possession;
+
+        // Vantaggio del campo
+        $homeFieldAdvantage = 1; // 1 per la squadra di casa
+        $awayFieldAdvantage = 0; // 0 per la squadra ospite
+
+        // Passo 1: Normalizzazione dei Dati
+
+        // Trova i valori massimi per la normalizzazione
+        $maxLevel = max($homeLevel, $awayLevel);
+        $maxForma = max($homeForma, $awayForma);
+        $maxPoints = max($homePoints, $awayPoints);
+        $maxPossession = max($homePossession, $awayPossession);
+
+        // Aggiustamento della differenza reti per evitare valori negativi
+        $minGoalDifference = min($homeGoalDifference, $awayGoalDifference);
+        $offsetGoalDifference = 0;
+        if ($minGoalDifference < 0) {
+            $offsetGoalDifference = abs($minGoalDifference);
+        }
+
+        $homeGoalDifferenceAdjusted = $homeGoalDifference + $offsetGoalDifference;
+        $awayGoalDifferenceAdjusted = $awayGoalDifference + $offsetGoalDifference;
+
+        $maxGoalDifferenceAdjusted = max($homeGoalDifferenceAdjusted, $awayGoalDifferenceAdjusted);
+
+        // Normalizzazione
+        $homeLevelNorm = $homeLevel / $maxLevel;
+        $awayLevelNorm = $awayLevel / $maxLevel;
+
+        $homeFormaNorm = $homeForma / $maxForma;
+        $awayFormaNorm = $awayForma / $maxForma;
+
+        $homePointsNorm = $homePoints / $maxPoints;
+        $awayPointsNorm = $awayPoints / $maxPoints;
+
+        // Normalizzazione della differenza reti aggiustata
+        if ($maxGoalDifferenceAdjusted > 0) {
+            $homeGoalDifferenceNorm = $homeGoalDifferenceAdjusted / $maxGoalDifferenceAdjusted;
+            $awayGoalDifferenceNorm = $awayGoalDifferenceAdjusted / $maxGoalDifferenceAdjusted;
+        } else {
+            $homeGoalDifferenceNorm = 0;
+            $awayGoalDifferenceNorm = 0;
+        }
+
+        $homePossessionNorm = $homePossession / $maxPossession;
+        $awayPossessionNorm = $awayPossession / $maxPossession;
+
+        // Passo 2: Calcolo dei Punteggi Ponderati
+        $homeScore = (
+            $homeLevelNorm * 0.30 +
+            $homeFormaNorm * 0.27 +
+            $homePointsNorm * 0.25 +
+            $homeFieldAdvantage * 0.07 +
+            $homeGoalDifferenceNorm * 0.08 +
+            $homePossessionNorm * 0.03
+        );
+
+        $awayScore = (
+            $awayLevelNorm * 0.30 +
+            $awayFormaNorm * 0.27 +
+            $awayPointsNorm * 0.25 +
+            $awayFieldAdvantage * 0.07 +
+            $awayGoalDifferenceNorm * 0.08 +
+            $awayPossessionNorm * 0.03
+        );
+
+        // Identificazione della squadra più forte e più debole
+        if ($homeScore >= $awayScore) {
+            $strongerScore = $homeScore;
+            $weakerScore = $awayScore;
+            $strongerTeam = 'home';
+        } else {
+            $strongerScore = $awayScore;
+            $weakerScore = $homeScore;
+            $strongerTeam = 'away';
+        }
+
+        // Calcolo dell'indice di disparità
+        $scoreDifference = $strongerScore - $weakerScore;
+        $scoreSum = $strongerScore + $weakerScore;
+        $disparityIndex = $scoreDifference / $scoreSum;
+
+        // Passo 3: Calcolo della Probabilità di Pareggio
+        $maxDrawProbability = 0.30; // 30% massima probabilità di pareggio
+        $k = 1.5; // Costante per la funzione esponenziale, aumentata per ridurre la dipendenza da disparità
+        $drawProbability = $maxDrawProbability * exp(-$k * $disparityIndex);
+
+        // Passo 4: Calcolo delle Probabilità di Vittoria
+        $totalWinProbability = 1 - $drawProbability;
+
+        $strongerWinProbability = $totalWinProbability * ($strongerScore / ($strongerScore + $weakerScore));
+        $weakerWinProbability = $totalWinProbability * ($weakerScore / ($strongerScore + $weakerScore));
+
+        // Passo 5: Aggiustamento in base all'indice di disparità
+        $disparityThreshold = 0.20; // Soglia di disparità
+
+        if ($disparityIndex >= $disparityThreshold) {
+            // Ridurre la probabilità della squadra più debole in base alla disparità
+            // Più alta è la disparità, maggiore è la riduzione
+            $adjustmentFactor = ($disparityIndex - $disparityThreshold) / (1 - $disparityThreshold);
+            // Definire un massimo per la squadra più debole che diminuisce con l'aumento della disparità
+            $maxWeakerWinProbability = 0.15 * (1 - $adjustmentFactor); // Da 15% a 0%
+
+            if ($weakerWinProbability > $maxWeakerWinProbability) {
+                $difference = $weakerWinProbability - $maxWeakerWinProbability;
+                $weakerWinProbability = $maxWeakerWinProbability;
+                $strongerWinProbability += $difference; // Aumenta la probabilità della squadra più forte
+            }
+        }
+
+        // Passo 6: Assicurarsi che le probabilità sommino a 1
+        $totalProbability = $strongerWinProbability + $drawProbability + $weakerWinProbability;
+
+        // Normalizzazione finale delle probabilità
+        if ($strongerTeam === 'home') {
+            $homeWinProbability = $strongerWinProbability;
+            $awayWinProbability = $weakerWinProbability;
+        } else {
+            $homeWinProbability = $weakerWinProbability;
+            $awayWinProbability = $strongerWinProbability;
+        }
+
+        $homeWinProbability /= $totalProbability;
+        $drawProbability /= $totalProbability;
+        $awayWinProbability /= $totalProbability;
+
+        // Convertire in percentuali
+        $homeWinPercentage = round($homeWinProbability * 100, 2);
+        $drawPercentage = round($drawProbability * 100, 2);
+        $awayWinPercentage = round($awayWinProbability * 100, 2);
+
+        return [
+            'homeWin' => $homeWinPercentage,
+            'draw' => $drawPercentage,
+            'awayWin' => $awayWinPercentage,
+        ];
+    }
+
+
+
 
 
 }

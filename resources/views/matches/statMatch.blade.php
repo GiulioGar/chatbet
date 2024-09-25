@@ -84,28 +84,66 @@
 
 
 <!-- Container centrato per il resto del contenuto della pagina -->
+
+
+@php
+    $homeWinProb = $matchProbabilities['homeWin']; // Es. 50
+    $drawProb = $matchProbabilities['draw'];       // Es. 30
+    $awayWinProb = $matchProbabilities['awayWin']; // Es. 20
+
+    // Converti le probabilità in formato decimale (0 - 1)
+    $homeWinDec = $homeWinProb / 100;
+    $drawDec = $drawProb / 100;
+    $awayWinDec = $awayWinProb / 100;
+@endphp
+@php
+    $homeWinDecimal = number_format(1 / $homeWinDec, 2);
+    $drawDecimal = number_format(1 / $drawDec, 2);
+    $awayWinDecimal = number_format(1 / $awayWinDec, 2);
+@endphp
+
+
 <div class="container resto my-4">
     <!-- Contenuti aggiuntivi -->
     <div class="row">
-        <div class="col-md-8">
+    <div class="col-md-8">
 
-
+    <div class="row">
+    <div class="col-md-12">
    <!-- Header -->
    <div class="card-custom">
-    <div class="header">La previsione</div>
-
+    <div class="header">Prediction 1 X 2</div>
     <!-- Squadra e Percentuali -->
-    <div class="row-team">
-      <img src="https://media.api-sports.io/football/teams/{{ $homeTeam->team_id}}.png" alt="{{ $homeTeam->name }}" class="team-logo">
-      <div class="progress-bar-container">
-        <div class="progress-bar">
-          <div class="progress-green"></div>
-          <div class="progress-yellow"></div>
-          <div class="progress-red"></div>
-        </div>
-      </div>
-      <img src="https://media.api-sports.io/football/teams/{{ $awayTeam->team_id}}.png" alt="{{ $awayTeam->name }}" class="team-logo">
+        <div class="row-team">
+            <img src="https://media.api-sports.io/football/teams/{{ $homeTeam->team_id }}.png" alt="{{ $homeTeam->name }}" class="team-logo">
+            <div class="progress-bar-container">
+            <div class="progress-bar">
+                <div class="progress-segment progress-green" style="width: {{ $matchProbabilities['homeWin'] }}%; left: 0%;">
+                <span>{{ $matchProbabilities['homeWin'] }}%</span><br/>
+                {{ $homeWinDecimal }}
+                </div>
+                <div class="progress-segment progress-yellow" style="width: {{ $matchProbabilities['draw'] }}%; left: {{ $matchProbabilities['homeWin'] }}%;">
+                <span>{{ $matchProbabilities['draw'] }}%</span>
+                {{ $drawDecimal }}
+                </div>
+                <div class="progress-segment progress-red" style="width: {{ $matchProbabilities['awayWin'] }}%; left: {{ $matchProbabilities['homeWin'] + $matchProbabilities['draw'] }}%;">
+                <span>{{ $matchProbabilities['awayWin'] }}%</span>
+                {{ $awayWinDecimal }}
+                </div>
+            </div>
+            </div>
+            <img src="https://media.api-sports.io/football/teams/{{ $awayTeam->team_id }}.png" alt="{{ $awayTeam->name }}" class="team-logo">
+            </div>
     </div>
+    </div>
+
+    </div>
+
+
+<div class="row">
+<div class="col-md-12">
+    <div class="card-custom">
+        <div class="header">Prediction 1 X 2</div>
 
     <!-- Statistiche Box -->
     <div class="row mt-4">
@@ -159,7 +197,11 @@
         </div>
       </div>
     </div>
+
+</div>
+
   </div>
+    </div>
 
 
         </div>

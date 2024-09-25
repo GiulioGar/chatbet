@@ -276,8 +276,42 @@ if ($totalWeight > 0) {
             Log::error("Errore durante l'aggiornamento delle statistiche per la squadra {$team->name}: {$e->getMessage()}");
         }
     }
+            // Richiama la funzione per calcolare il momento di forma delle squadre
+            $this->calcolaMomentoForma();
 }
 
+public function calcolaMomentoForma()
+    {
+        // Recupera tutte le squadre ordinate per forma decrescente
+        $teams = Team::where('league_id', '>', 0)->orderBy('forma', 'desc')->get();
+
+        // Calcola il numero totale di squadre
+        $totalTeams = $teams->count();
+
+        // Determina la dimensione di ciascuna fascia
+        $fasciaSize = ceil($totalTeams / 5);
+
+        // Assegna una fascia a ciascuna squadra
+        foreach ($teams as $index => $team) {
+            if ($index < $fasciaSize) {
+                $fascia = 'Ottima';
+            } elseif ($index < $fasciaSize * 2) {
+                $fascia = 'Buona';
+            } elseif ($index < $fasciaSize * 3) {
+                $fascia = 'Media';
+            } elseif ($index < $fasciaSize * 4) {
+                $fascia = 'Mediocre';
+            } else {
+                $fascia = 'Scarsa';
+            }
+
+            // Aggiorna la fascia nel database
+            $team->fascia = $fascia;
+            $team->save();
+
+            Log::info("Fascia aggiornata per la squadra {$team->name}: Fascia = {$fascia}");
+        }
+    }
 
 
 }
