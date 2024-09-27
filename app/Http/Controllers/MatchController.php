@@ -17,7 +17,7 @@ class MatchController extends Controller
         $this->leagueController = new LeagueController();
     }
 
-public function showStatistics($homeTeam, $awayTeam)
+    public function showStatistics($homeTeam, $awayTeam)
 {
     // Recupera le squadre dal database
     $homeTeamData = Team::where('name', $homeTeam)->first();
@@ -28,20 +28,15 @@ public function showStatistics($homeTeam, $awayTeam)
         return back()->with('error', 'Squadre non trovate. Riprova con nomi validi.');
     }
 
-    // Calcola la classifica per la lega di queste squadre
-    $leagueId = $homeTeamData->league_id; // Assumendo che entrambe le squadre siano nella stessa lega
+    // Calcola le posizioni in classifica
+    $leagueId = $homeTeamData->league_id;
     $leagueName = $this->leagueController->getLeagueNameById($leagueId);
-
     $teams = Team::where('league_id', $leagueId)->get();
 
-    // Calcola punti e ordina per classifica
-// Richiama i punti e ordina per classifica
-$teams = $teams->sortByDesc(function ($team) {
-    return [$team->points, $team->goal_difference, $team->t_goals_for];
-})->values();
+    $teams = $teams->sortByDesc(function ($team) {
+        return [$team->points, $team->goal_difference, $team->t_goals_for];
+    })->values();
 
-
-    // Trova le posizioni attuali delle due squadre
     $homeTeamPosition = $teams->search(function ($team) use ($homeTeamData) {
         return $team->team_id === $homeTeamData->team_id;
     }) + 1;
@@ -50,9 +45,60 @@ $teams = $teams->sortByDesc(function ($team) {
         return $team->team_id === $awayTeamData->team_id;
     }) + 1;
 
-    // Assegna i punti calcolati direttamente ai modelli delle squadre
-    $homeTeamData->points = ($homeTeamData->t_wins * 3) + $homeTeamData->t_draws;
-    $awayTeamData->points = ($awayTeamData->t_wins * 3) + $awayTeamData->t_draws;
+    // Calcola le statistiche per la colonna Generale
+    $homeWinPercentage = ($homeTeamData->t_played > 0) ? round(($homeTeamData->t_wins / $homeTeamData->t_played) * 100, 2) : 0;
+    $homeDrawPercentage = ($homeTeamData->t_played > 0) ? round(($homeTeamData->t_draws / $homeTeamData->t_played) * 100, 2) : 0;
+    $homeLossPercentage = ($homeTeamData->t_played > 0) ? round(($homeTeamData->t_losses / $homeTeamData->t_played) * 100, 2) : 0;
+
+    $awayWinPercentage = ($awayTeamData->t_played > 0) ? round(($awayTeamData->t_wins / $awayTeamData->t_played) * 100, 2) : 0;
+    $awayDrawPercentage = ($awayTeamData->t_played > 0) ? round(($awayTeamData->t_draws / $awayTeamData->t_played) * 100, 2) : 0;
+    $awayLossPercentage = ($awayTeamData->t_played > 0) ? round(($awayTeamData->t_losses / $awayTeamData->t_played) * 100, 2) : 0;
+
+    // Calcola le statistiche per la colonna Casa
+    $homeHomeWinPercentage = ($homeTeamData->h_played > 0) ? round(($homeTeamData->h_wins / $homeTeamData->h_played) * 100, 2) : 0;
+    $homeHomeDrawPercentage = ($homeTeamData->h_played > 0) ? round(($homeTeamData->h_draws / $homeTeamData->h_played) * 100, 2) : 0;
+    $homeHomeLossPercentage = ($homeTeamData->h_played > 0) ? round(($homeTeamData->h_losses / $homeTeamData->h_played) * 100, 2) : 0;
+
+    $awayHomeWinPercentage = ($awayTeamData->h_played > 0) ? round(($awayTeamData->h_wins / $awayTeamData->h_played) * 100, 2) : 0;
+    $awayHomeDrawPercentage = ($awayTeamData->h_played > 0) ? round(($awayTeamData->h_draws / $awayTeamData->h_played) * 100, 2) : 0;
+    $awayHomeLossPercentage = ($awayTeamData->h_played > 0) ? round(($awayTeamData->h_losses / $awayTeamData->h_played) * 100, 2) : 0;
+
+    // Calcola le statistiche per la colonna Ospite
+    $homeAwayWinPercentage = ($homeTeamData->a_played > 0) ? round(($homeTeamData->a_wins / $homeTeamData->a_played) * 100, 2) : 0;
+    $homeAwayDrawPercentage = ($homeTeamData->a_played > 0) ? round(($homeTeamData->a_draws / $homeTeamData->a_played) * 100, 2) : 0;
+    $homeAwayLossPercentage = ($homeTeamData->a_played > 0) ? round(($homeTeamData->a_losses / $homeTeamData->a_played) * 100, 2) : 0;
+
+    $awayAwayWinPercentage = ($awayTeamData->a_played > 0) ? round(($awayTeamData->a_wins / $awayTeamData->a_played) * 100, 2) : 0;
+    $awayAwayDrawPercentage = ($awayTeamData->a_played > 0) ? round(($awayTeamData->a_draws / $awayTeamData->a_played) * 100, 2) : 0;
+    $awayAwayLossPercentage = ($awayTeamData->a_played > 0) ? round(($awayTeamData->a_losses / $awayTeamData->a_played) * 100, 2) : 0;
+
+    // Calcola i punteggi delle squadre
+    $teamScores = $this->calculateTeamScores($homeTeamData, $awayTeamData);
+
+
+// Calcolo dei punti generali, in casa e fuori casa
+$homePointsGeneral = $homeTeamData->points;
+$homePointsHome = ($homeTeamData->h_wins * 3) + $homeTeamData->h_draws;
+$homePointsAway = ($homeTeamData->a_wins * 3) + $homeTeamData->a_draws;
+
+$awayPointsGeneral = $awayTeamData->points;
+$awayPointsHome = ($awayTeamData->h_wins * 3) + $awayTeamData->h_draws;
+$awayPointsAway = ($awayTeamData->a_wins * 3) + $awayTeamData->a_draws;
+
+$homePointsHomePercentage = $homePointsGeneral > 0 ? round(($homePointsHome / $homePointsGeneral) * 100, 2) : 0;
+$homePointsAwayPercentage = $homePointsGeneral > 0 ? round(($homePointsAway / $homePointsGeneral) * 100, 2) : 0;
+
+$awayPointsHomePercentage = $awayPointsGeneral > 0 ? round(($awayPointsHome / $awayPointsGeneral) * 100, 2) : 0;
+$awayPointsAwayPercentage = $awayPointsGeneral > 0 ? round(($awayPointsAway / $awayPointsGeneral) * 100, 2) : 0;
+
+
+    // Calcola le probabilità di vittoria, pareggio e sconfitta
+    try {
+        $matchProbabilities = $this->calculateMatchProbabilities($teamScores['homeTeamScore'], $teamScores['awayTeamScore']);
+    } catch (\InvalidArgumentException $e) {
+        Log::error("Errore nel calcolo delle probabilità: " . $e->getMessage());
+        return back()->with('error', 'Errore nel calcolo delle probabilità. Riprova più tardi.');
+    }
 
     // Recupera i dettagli della partita
     $match = Matches::where('home_id', $homeTeamData->team_id)
@@ -63,9 +109,6 @@ $teams = $teams->sortByDesc(function ($team) {
     $homeTeamLastFive = $this->getLastFiveMatches($homeTeamData->team_id);
     $awayTeamLastFive = $this->getLastFiveMatches($awayTeamData->team_id);
 
-     // Calcola le probabilità di vittoria, pareggio e sconfitta
-     $matchProbabilities = $this->calculateMatchProbabilities($homeTeamData, $awayTeamData);
-
     // Passa i dati alla vista
     return view('matches.statMatch', [
         'homeTeam' => $homeTeamData,
@@ -75,13 +118,141 @@ $teams = $teams->sortByDesc(function ($team) {
         'awayTeamPosition' => $awayTeamPosition,
         'homeTeamLastFive' => $homeTeamLastFive,
         'awayTeamLastFive' => $awayTeamLastFive,
-        'leagueName' => $leagueName, // Passa il nome della lega alla vista
-        'teams' => $teams, // Passa la classifica delle squadre alla vista
-        'matchProbabilities' => $matchProbabilities, // Passa le probabilità alla vista
+        'leagueName' => $leagueName,
+        'teams' => $teams,
+        'teamScores' => $teamScores,
+        'matchProbabilities' => $matchProbabilities,
+        'homePointsGeneral' => $homePointsGeneral,
+        'homePointsHome' => $homePointsHome,
+        'homePointsAway' => $homePointsAway,
+        'homePointsHomePercentage' => $homePointsHomePercentage,
+        'homePointsAwayPercentage' => $homePointsAwayPercentage,
+        'awayPointsGeneral' => $awayPointsGeneral,
+        'awayPointsHome' => $awayPointsHome,
+        'awayPointsAway' => $awayPointsAway,
+        'awayPointsHomePercentage' => $awayPointsHomePercentage,
+        'awayPointsAwayPercentage' => $awayPointsAwayPercentage,
     ]);
+
 }
 
+    /**
+     * Calcola i punteggi delle squadre basati su diversi fattori.
+     *
+     * @param object $homeTeamData
+     * @param object $awayTeamData
+     * @return array
+     */
+    private function calculateTeamScores($homeTeamData, $awayTeamData)
+    {
+        // Pesi aggiornati
+        $weights = [
+            'level' => 0.80,
+            'forma' => 0.10,
+            'goal_diff' => 0.05,
+            'xG' => 0.03,
+            'tiri_in_porta' => 0.01,
+            'possesso_palla' => 0.01,
+        ];
 
+        // Calcolo della differenza di livello
+        $levelDifference = $homeTeamData->level - $awayTeamData->level;
+
+        // Funzione interna per calcolare il punteggio di una squadra
+        $calculateScore = function ($teamData, $isHome, $applyHandicap = false) use ($weights, $levelDifference) {
+            $score = (
+                $teamData->level * $weights['level'] +
+                $teamData->forma * $weights['forma'] +
+                $teamData->goal_difference * $weights['goal_diff'] +
+                $teamData->xg * $weights['xG'] +
+                $teamData->t_shots_on_goal * $weights['tiri_in_porta'] +
+                $teamData->t_ball_possession * $weights['possesso_palla']
+            );
+
+            // Aggiunta del vantaggio casa
+            if ($isHome) {
+                $score *= 1.1;
+            }
+
+            // Applicazione dell'handicap dinamico per la squadra più debole
+            if ($applyHandicap) {
+                $handicapFactor = pow(0.85, $levelDifference / 10);
+                $score *= $handicapFactor;
+            }
+
+            return $score;
+        };
+
+        // Calcola i punteggi per le squadre
+        $homeTeamScore = $calculateScore($homeTeamData, true);
+        $awayTeamScore = $calculateScore($awayTeamData, false, true);
+
+        return [
+            'homeTeamScore' => $homeTeamScore,
+            'awayTeamScore' => $awayTeamScore,
+        ];
+    }
+
+    /**
+     * Calcola le probabilità di vittoria, pareggio e sconfitta.
+     *
+     * @param float $homeTeamScore
+     * @param float $awayTeamScore
+     * @param float $alpha_base (default: 0.30)
+     * @return array
+     * @throws \InvalidArgumentException
+     */
+    private function calculateMatchProbabilities($homeTeamScore, $awayTeamScore, $alpha_base = 0.30)
+    {
+        // Verifica che i punteggi siano numeri positivi
+        if (!is_numeric($homeTeamScore) || !is_numeric($awayTeamScore) || !is_numeric($alpha_base)) {
+            throw new \InvalidArgumentException('Tutti i parametri devono essere numeri.');
+        }
+
+        if ($homeTeamScore <= 0 || $awayTeamScore <= 0) {
+            throw new \InvalidArgumentException('I punteggi di forza devono essere numeri positivi.');
+        }
+
+        // Calcolo delle ponderazioni esponenziali
+        $ponderazioneA = pow($homeTeamScore, 2);
+        $ponderazioneB = pow($awayTeamScore, 2);
+
+        // Calcolo della differenza normalizzata
+        $differenza = ($homeTeamScore - $awayTeamScore) / ($homeTeamScore + $awayTeamScore);
+
+        // Calcolo della probabilità dinamica del pareggio
+        $probabilitaX = $alpha_base * (1 - $differenza);
+
+        // Assicurarsi che la probabilità del pareggio sia compresa tra 0 e 1
+        $probabilitaX = max(0, min(1, $probabilitaX));
+
+        // Calcolo delle probabilità corrette per vittoria A e vittoria B
+        $probabilitaA = ($ponderazioneA / ($ponderazioneA + $ponderazioneB)) * (1 - $probabilitaX);
+        $probabilitaB = ($ponderazioneB / ($ponderazioneA + $ponderazioneB)) * (1 - $probabilitaX);
+
+        // Assicurarsi che le probabilità siano comprese tra 0 e 1
+        $probabilitaA = max(0, min(1, $probabilitaA));
+        $probabilitaB = max(0, min(1, $probabilitaB));
+
+        // Arrotondamento delle probabilità a 4 cifre decimali
+        $probabilitaA = round($probabilitaA, 4);
+        $probabilitaX = round($probabilitaX, 4);
+        $probabilitaB = round($probabilitaB, 4);
+
+        // Restituzione dei risultati in un array associativo con chiavi descrittive
+        return [
+            'homeWin' => $probabilitaA, // Vittoria della squadra di casa (Squadra A)
+            'draw'    => $probabilitaX, // Pareggio
+            'awayWin' => $probabilitaB  // Vittoria della squadra ospite (Squadra B)
+        ];
+    }
+
+    /**
+     * Ottiene gli ultimi 5 match di una squadra.
+     *
+     * @param int $teamId
+     * @return \Illuminate\Support\Collection
+     */
     private function getLastFiveMatches($teamId)
     {
         return Matches::where(function ($query) use ($teamId) {
@@ -94,164 +265,4 @@ $teams = $teams->sortByDesc(function ($team) {
                 ->take(5)
                 ->get();
     }
-
-    private function calculateMatchProbabilities($homeTeamData, $awayTeamData)
-    {
-        // Dati delle squadre
-        $homeLevel = $homeTeamData->level;
-        $awayLevel = $awayTeamData->level;
-
-        $homeForma = $homeTeamData->forma;
-        $awayForma = $awayTeamData->forma;
-
-        $homePoints = $homeTeamData->points;
-        $awayPoints = $awayTeamData->points;
-
-        $homeGoalDifference = $homeTeamData->goal_difference;
-        $awayGoalDifference = $awayTeamData->goal_difference;
-
-        $homePossession = $homeTeamData->t_ball_possession;
-        $awayPossession = $awayTeamData->t_ball_possession;
-
-        // Vantaggio del campo
-        $homeFieldAdvantage = 1; // 1 per la squadra di casa
-        $awayFieldAdvantage = 0; // 0 per la squadra ospite
-
-        // Passo 1: Normalizzazione dei Dati
-
-        // Trova i valori massimi per la normalizzazione
-        $maxLevel = max($homeLevel, $awayLevel);
-        $maxForma = max($homeForma, $awayForma);
-        $maxPoints = max($homePoints, $awayPoints);
-        $maxPossession = max($homePossession, $awayPossession);
-
-        // Aggiustamento della differenza reti per evitare valori negativi
-        $minGoalDifference = min($homeGoalDifference, $awayGoalDifference);
-        $offsetGoalDifference = 0;
-        if ($minGoalDifference < 0) {
-            $offsetGoalDifference = abs($minGoalDifference);
-        }
-
-        $homeGoalDifferenceAdjusted = $homeGoalDifference + $offsetGoalDifference;
-        $awayGoalDifferenceAdjusted = $awayGoalDifference + $offsetGoalDifference;
-
-        $maxGoalDifferenceAdjusted = max($homeGoalDifferenceAdjusted, $awayGoalDifferenceAdjusted);
-
-        // Normalizzazione
-        $homeLevelNorm = $homeLevel / $maxLevel;
-        $awayLevelNorm = $awayLevel / $maxLevel;
-
-        $homeFormaNorm = $homeForma / $maxForma;
-        $awayFormaNorm = $awayForma / $maxForma;
-
-        $homePointsNorm = $homePoints / $maxPoints;
-        $awayPointsNorm = $awayPoints / $maxPoints;
-
-        // Normalizzazione della differenza reti aggiustata
-        if ($maxGoalDifferenceAdjusted > 0) {
-            $homeGoalDifferenceNorm = $homeGoalDifferenceAdjusted / $maxGoalDifferenceAdjusted;
-            $awayGoalDifferenceNorm = $awayGoalDifferenceAdjusted / $maxGoalDifferenceAdjusted;
-        } else {
-            $homeGoalDifferenceNorm = 0;
-            $awayGoalDifferenceNorm = 0;
-        }
-
-        $homePossessionNorm = $homePossession / $maxPossession;
-        $awayPossessionNorm = $awayPossession / $maxPossession;
-
-        // Passo 2: Calcolo dei Punteggi Ponderati
-        $homeScore = (
-            $homeLevelNorm * 0.30 +
-            $homeFormaNorm * 0.27 +
-            $homePointsNorm * 0.25 +
-            $homeFieldAdvantage * 0.07 +
-            $homeGoalDifferenceNorm * 0.08 +
-            $homePossessionNorm * 0.03
-        );
-
-        $awayScore = (
-            $awayLevelNorm * 0.30 +
-            $awayFormaNorm * 0.27 +
-            $awayPointsNorm * 0.25 +
-            $awayFieldAdvantage * 0.07 +
-            $awayGoalDifferenceNorm * 0.08 +
-            $awayPossessionNorm * 0.03
-        );
-
-        // Identificazione della squadra più forte e più debole
-        if ($homeScore >= $awayScore) {
-            $strongerScore = $homeScore;
-            $weakerScore = $awayScore;
-            $strongerTeam = 'home';
-        } else {
-            $strongerScore = $awayScore;
-            $weakerScore = $homeScore;
-            $strongerTeam = 'away';
-        }
-
-        // Calcolo dell'indice di disparità
-        $scoreDifference = $strongerScore - $weakerScore;
-        $scoreSum = $strongerScore + $weakerScore;
-        $disparityIndex = $scoreDifference / $scoreSum;
-
-        // Passo 3: Calcolo della Probabilità di Pareggio
-        $maxDrawProbability = 0.30; // 30% massima probabilità di pareggio
-        $k = 1.5; // Costante per la funzione esponenziale, aumentata per ridurre la dipendenza da disparità
-        $drawProbability = $maxDrawProbability * exp(-$k * $disparityIndex);
-
-        // Passo 4: Calcolo delle Probabilità di Vittoria
-        $totalWinProbability = 1 - $drawProbability;
-
-        $strongerWinProbability = $totalWinProbability * ($strongerScore / ($strongerScore + $weakerScore));
-        $weakerWinProbability = $totalWinProbability * ($weakerScore / ($strongerScore + $weakerScore));
-
-        // Passo 5: Aggiustamento in base all'indice di disparità
-        $disparityThreshold = 0.20; // Soglia di disparità
-
-        if ($disparityIndex >= $disparityThreshold) {
-            // Ridurre la probabilità della squadra più debole in base alla disparità
-            // Più alta è la disparità, maggiore è la riduzione
-            $adjustmentFactor = ($disparityIndex - $disparityThreshold) / (1 - $disparityThreshold);
-            // Definire un massimo per la squadra più debole che diminuisce con l'aumento della disparità
-            $maxWeakerWinProbability = 0.15 * (1 - $adjustmentFactor); // Da 15% a 0%
-
-            if ($weakerWinProbability > $maxWeakerWinProbability) {
-                $difference = $weakerWinProbability - $maxWeakerWinProbability;
-                $weakerWinProbability = $maxWeakerWinProbability;
-                $strongerWinProbability += $difference; // Aumenta la probabilità della squadra più forte
-            }
-        }
-
-        // Passo 6: Assicurarsi che le probabilità sommino a 1
-        $totalProbability = $strongerWinProbability + $drawProbability + $weakerWinProbability;
-
-        // Normalizzazione finale delle probabilità
-        if ($strongerTeam === 'home') {
-            $homeWinProbability = $strongerWinProbability;
-            $awayWinProbability = $weakerWinProbability;
-        } else {
-            $homeWinProbability = $weakerWinProbability;
-            $awayWinProbability = $strongerWinProbability;
-        }
-
-        $homeWinProbability /= $totalProbability;
-        $drawProbability /= $totalProbability;
-        $awayWinProbability /= $totalProbability;
-
-        // Convertire in percentuali
-        $homeWinPercentage = round($homeWinProbability * 100, 2);
-        $drawPercentage = round($drawProbability * 100, 2);
-        $awayWinPercentage = round($awayWinProbability * 100, 2);
-
-        return [
-            'homeWin' => $homeWinPercentage,
-            'draw' => $drawPercentage,
-            'awayWin' => $awayWinPercentage,
-        ];
-    }
-
-
-
-
-
 }

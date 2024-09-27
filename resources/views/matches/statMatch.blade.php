@@ -86,58 +86,137 @@
 <!-- Container centrato per il resto del contenuto della pagina -->
 
 
-@php
-    $homeWinProb = $matchProbabilities['homeWin']; // Es. 50
-    $drawProb = $matchProbabilities['draw'];       // Es. 30
-    $awayWinProb = $matchProbabilities['awayWin']; // Es. 20
-
-    // Converti le probabilità in formato decimale (0 - 1)
-    $homeWinDec = $homeWinProb / 100;
-    $drawDec = $drawProb / 100;
-    $awayWinDec = $awayWinProb / 100;
-@endphp
-@php
-    $homeWinDecimal = number_format(1 / $homeWinDec, 2);
-    $drawDecimal = number_format(1 / $drawDec, 2);
-    $awayWinDecimal = number_format(1 / $awayWinDec, 2);
-@endphp
-
 
 <div class="container resto my-4">
     <!-- Contenuti aggiuntivi -->
     <div class="row">
     <div class="col-md-8">
 
-    <div class="row">
-    <div class="col-md-12">
-   <!-- Header -->
-   <div class="card-custom">
-    <div class="header">Prediction 1 X 2</div>
-    <!-- Squadra e Percentuali -->
-        <div class="row-team">
-            <img src="https://media.api-sports.io/football/teams/{{ $homeTeam->team_id }}.png" alt="{{ $homeTeam->name }}" class="team-logo">
-            <div class="progress-bar-container">
-            <div class="progress-bar">
-                <div class="progress-segment progress-green" style="width: {{ $matchProbabilities['homeWin'] }}%; left: 0%;">
-                <span>{{ $matchProbabilities['homeWin'] }}%</span><br/>
-                {{ $homeWinDecimal }}
-                </div>
-                <div class="progress-segment progress-yellow" style="width: {{ $matchProbabilities['draw'] }}%; left: {{ $matchProbabilities['homeWin'] }}%;">
-                <span>{{ $matchProbabilities['draw'] }}%</span>
-                {{ $drawDecimal }}
-                </div>
-                <div class="progress-segment progress-red" style="width: {{ $matchProbabilities['awayWin'] }}%; left: {{ $matchProbabilities['homeWin'] + $matchProbabilities['draw'] }}%;">
-                <span>{{ $matchProbabilities['awayWin'] }}%</span>
-                {{ $awayWinDecimal }}
-                </div>
-            </div>
-            </div>
-            <img src="https://media.api-sports.io/football/teams/{{ $awayTeam->team_id }}.png" alt="{{ $awayTeam->name }}" class="team-logo">
-            </div>
-    </div>
-    </div>
+        <div class="row">
+            <div class="col-md-12">
+                <!-- Header -->
+                <div class="card-custom">
+                    <div class="header">1 X 2</div>
+                    <!-- Squadra e Percentuali -->
+                    <div class="row-team">
+                        <img src="https://media.api-sports.io/football/teams/{{ $homeTeam->team_id }}.png" alt="{{ $homeTeam->name }}" class="team-logo">
+                        <div class="progress-bar-container">
+                            <div class="progress-bar">
+                                <div class="progress-segment progress-green" style="width: {{ $matchProbabilities['homeWin'] * 100 }}%; left: 0%;">
+                                    <span>{{ number_format($matchProbabilities['homeWin'] * 100, 2) }}%</span>
+                                </div>
+                                <div class="progress-segment progress-yellow" style="width: {{ $matchProbabilities['draw'] * 100 }}%; left: {{ $matchProbabilities['homeWin'] * 100 }}%;">
+                                    <span>{{ number_format($matchProbabilities['draw'] * 100, 2) }}%</span>
+                                </div>
+                                <div class="progress-segment progress-red" style="width: {{ $matchProbabilities['awayWin'] * 100 }}%; left: {{ ($matchProbabilities['homeWin'] + $matchProbabilities['draw']) * 100 }}%;">
+                                    <span>{{ number_format($matchProbabilities['awayWin'] * 100, 2) }}%</span>
+                                </div>
+                            </div>
+                        </div>
+                        <img src="https://media.api-sports.io/football/teams/{{ $awayTeam->team_id }}.png" alt="{{ $awayTeam->name }}" class="team-logo">
+                    </div>
 
-    </div>
+                    <!-- Tabelle Squadre -->
+                    <div class="row-team">
+                        <!-- Tabella Home Team -->
+                        <div class="team-table">
+                            <div class="team-header">
+                                <img src="https://media.api-sports.io/football/teams/{{ $homeTeam->team_id }}.png" alt="{{ $homeTeam->name }}" class="team-logo">
+                                <div>
+                                    <h4>{{ $homeTeam->name }}</h4>
+                                    <p>{{ $homeTeam->league }} - {{ $homeTeam->position }}</p>
+                                </div>
+                            </div>
+                            <table class="team-stats">
+                                <thead>
+                                    <tr>
+                                        <th></th>
+                                        <th>Generale</th>
+                                        <th>Casa</th>
+                                        <th>Ospite</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>% Vittoria</td>
+                                        <td>{{ $homeTeam->t_wins > 0 ? round(($homeTeam->t_wins / $homeTeam->t_played) * 100, 2) : 0 }}%</td>
+                                        <td>{{ $homeTeam->h_wins > 0 ? round(($homeTeam->h_wins / $homeTeam->h_played) * 100, 2) : 0 }}%</td>
+                                        <td>{{ $homeTeam->a_wins > 0 ? round(($homeTeam->a_wins / $homeTeam->a_played) * 100, 2) : 0 }}%</td>
+                                    </tr>
+                                    <tr>
+                                        <td>% Pareggio</td>
+                                        <td>{{ $homeTeam->t_draws > 0 ? round(($homeTeam->t_draws / $homeTeam->t_played) * 100, 2) : 0 }}%</td>
+                                        <td>{{ $homeTeam->h_draws > 0 ? round(($homeTeam->h_draws / $homeTeam->h_played) * 100, 2) : 0 }}%</td>
+                                        <td>{{ $homeTeam->a_draws > 0 ? round(($homeTeam->a_draws / $homeTeam->a_played) * 100, 2) : 0 }}%</td>
+                                    </tr>
+                                    <tr>
+                                        <td>% Sconfitta</td>
+                                        <td>{{ $homeTeam->t_losses > 0 ? round(($homeTeam->t_losses / $homeTeam->t_played) * 100, 2) : 0 }}%</td>
+                                        <td>{{ $homeTeam->h_losses > 0 ? round(($homeTeam->h_losses / $homeTeam->h_played) * 100, 2) : 0 }}%</td>
+                                        <td>{{ $homeTeam->a_losses > 0 ? round(($homeTeam->a_losses / $homeTeam->a_played) * 100, 2) : 0 }}%</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Punti</td>
+                                        <td>{{ $homePointsGeneral }}</td>
+                                        <td>{{ $homePointsHome }} ({{ $homePointsHomePercentage }}%)</td>
+                                        <td>{{ $homePointsAway }} ({{ $homePointsAwayPercentage }}%)</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+
+                        </div>
+
+                        <!-- Tabella Away Team -->
+                        <div class="team-table">
+                            <div class="team-header">
+                                <img src="https://media.api-sports.io/football/teams/{{ $awayTeam->team_id }}.png" alt="{{ $awayTeam->name }}" class="team-logo">
+                                <div>
+                                    <h4>{{ $awayTeam->name }}</h4>
+                                    <p>{{ $awayTeam->league }} - {{ $awayTeam->position }}</p>
+                                </div>
+                            </div>
+                            <table class="team-stats">
+                                <thead>
+                                    <tr>
+                                        <th></th>
+                                        <th>Generale</th>
+                                        <th>Casa</th>
+                                        <th>Ospite</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>% Vittoria</td>
+                                        <td>{{ round(($awayTeam->t_wins / $awayTeam->t_played) * 100, 2) }}%</td>
+                                        <td>{{ round(($awayTeam->h_wins / $awayTeam->h_played) * 100, 2) }}%</td>
+                                        <td>{{ round(($awayTeam->a_wins / $awayTeam->a_played) * 100, 2) }}%</td>
+                                    </tr>
+                                    <tr>
+                                        <td>% Pareggio</td>
+                                        <td>{{ round(($awayTeam->t_draws / $awayTeam->t_played) * 100, 2) }}%</td>
+                                        <td>{{ round(($awayTeam->h_draws / $awayTeam->h_played) * 100, 2) }}%</td>
+                                        <td>{{ round(($awayTeam->a_draws / $awayTeam->a_played) * 100, 2) }}%</td>
+                                    </tr>
+                                    <tr>
+                                        <td>% Sconfitta</td>
+                                        <td>{{ round(($awayTeam->t_losses / $awayTeam->t_played) * 100, 2) }}%</td>
+                                        <td>{{ round(($awayTeam->h_losses / $awayTeam->h_played) * 100, 2) }}%</td>
+                                        <td>{{ round(($awayTeam->a_losses / $awayTeam->a_played) * 100, 2) }}%</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Punti</td>
+                                        <td>{{ $awayPointsGeneral }}</td>
+                                        <td>{{ $awayPointsHome }} ({{ $awayPointsHomePercentage }}%)</td>
+                                        <td>{{ $awayPointsAway }} ({{ $awayPointsAwayPercentage }}%)</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
 
 
 <div class="row">

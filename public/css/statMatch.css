@@ -246,3 +246,59 @@
     background-color: rgb(23, 132, 182);
     color: white;
 }
+
+.row-team {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 20px 0;
+}
+
+.team-table {
+    width: 48%;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    overflow: hidden;
+}
+
+.team-header{
+    display: flex;
+    align-items: center;
+    background-color: #1784B6;
+
+    padding: 10px;
+}
+
+.team-header h4 {
+    margin: 0;
+    font-size: 18px;
+    color: #fff;
+}
+
+.team-header p {
+    margin: 0;
+    font-size: 12px;
+}
+
+.team-stats {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.team-stats th, .team-stats td {
+    border: 1px solid #ccc;
+    padding: 5px;
+    text-align: center;
+}
+
+.team-stats th {
+    background-color: #f8f8f8;
+}
+
+.team-stats th:nth-child(2),
+.team-stats td:nth-child(2) {
+    background-color: #e9ecef; /* Colore di sfondo solido */
+    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1); /* Ombra laterale */
+    font-weight: bold;
+}
+
