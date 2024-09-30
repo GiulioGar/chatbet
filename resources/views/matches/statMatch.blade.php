@@ -96,7 +96,7 @@
             <div class="col-md-12">
                 <!-- Header -->
                 <div class="card-custom">
-                    <div class="header">1 X 2</div>
+                    <div class="header">Esito incontro</div>
                     <!-- Squadra e Percentuali -->
                     <div class="row-team">
                         <img src="https://media.api-sports.io/football/teams/{{ $homeTeam->team_id }}.png" alt="{{ $homeTeam->name }}" class="team-logo">
@@ -124,7 +124,7 @@
                                 <img src="https://media.api-sports.io/football/teams/{{ $homeTeam->team_id }}.png" alt="{{ $homeTeam->name }}" class="team-logo">
                                 <div>
                                     <h4>{{ $homeTeam->name }}</h4>
-                                    <p>{{ $homeTeam->league }} - {{ $homeTeam->position }}</p>
+                                    <p style="color:#f0eeee">Forma attuale:{{ $homeTeam->fascia }}</p>
                                 </div>
                             </div>
                             <table class="team-stats">
@@ -137,6 +137,12 @@
                                     </tr>
                                 </thead>
                                 <tbody>
+                                    <tr>
+                                        <td>Giocate</td>
+                                        <td>{{ $homeTeam->t_played }}</td>
+                                        <td>{{ $homeTeam->h_played }}</td>
+                                        <td>{{ $homeTeam->a_played }}</td>
+                                    </tr>
                                     <tr>
                                         <td>% Vittoria</td>
                                         <td>{{ $homeTeam->t_wins > 0 ? round(($homeTeam->t_wins / $homeTeam->t_played) * 100, 2) : 0 }}%</td>
@@ -172,7 +178,7 @@
                                 <img src="https://media.api-sports.io/football/teams/{{ $awayTeam->team_id }}.png" alt="{{ $awayTeam->name }}" class="team-logo">
                                 <div>
                                     <h4>{{ $awayTeam->name }}</h4>
-                                    <p>{{ $awayTeam->league }} - {{ $awayTeam->position }}</p>
+                                    <p style="color:#f0eeee">Forma attuale:{{ $awayTeam->fascia }}</p>
                                 </div>
                             </div>
                             <table class="team-stats">
@@ -185,6 +191,12 @@
                                     </tr>
                                 </thead>
                                 <tbody>
+                                    <tr>
+                                        <td>Giocate</td>
+                                        <td>{{ $awayTeam->t_played }}</td>
+                                        <td>{{ $awayTeam->h_played }}</td>
+                                        <td>{{ $awayTeam->a_played }}</td>
+                                    </tr>
                                     <tr>
                                         <td>% Vittoria</td>
                                         <td>{{ round(($awayTeam->t_wins / $awayTeam->t_played) * 100, 2) }}%</td>
@@ -222,60 +234,198 @@
 <div class="row">
 <div class="col-md-12">
     <div class="card-custom">
-        <div class="header">Prediction 1 X 2</div>
+        <div class="header">Gol & Over</div>
 
+<div class="row-team">
     <!-- Statistiche Box -->
-    <div class="row mt-4">
-      <div class="col-md-4">
+    <div class="row mt-2">
+      <div class="col-md-3">
         <div class="stat-box">
-          <div class="stat-number">100%</div>
-          <div class="stat-description">Più di 1.5</div>
+          <div class="stat-number">{{ $overUnderProbabilities['over_1_5'] }}%</div>
+          <div class="stat-description">Over 1.5</div>
           <div class="footer-green"></div>
         </div>
       </div>
 
-      <div class="col-md-4">
+      <div class="col-md-3">
         <div class="stat-box">
-          <div class="stat-number">50%</div>
-          <div class="stat-description">Più di 2.5</div>
+          <div class="stat-number">{{ $overUnderProbabilities['over_2_5'] }}%</div>
+          <div class="stat-description">Over 2.5</div>
           <div class="footer-yellow"></div>
         </div>
       </div>
 
-      <div class="col-md-4">
+      <div class="col-md-3">
         <div class="stat-box">
-          <div class="stat-number">20%</div>
-          <div class="stat-description">Più di 3.5</div>
+          <div class="stat-number">{{ $overUnderProbabilities['over_3_5'] }}%</div>
+          <div class="stat-description">Over 3.5</div>
           <div class="footer-red"></div>
         </div>
       </div>
+
+
+      <div class="col-md-3">
+        <div class="stat-box">
+          <div class="stat-number">{{ $overUnderProbabilities['both_teams_to_score'] }}%</div>
+          <div class="stat-description">Gol Gol</div>
+          <div class="footer-red"></div>
+        </div>
+      </div>
+
     </div>
 
-    <div class="row mt-4">
-      <div class="col-md-4">
-        <div class="stat-box">
-          <div class="stat-number">40%</div>
-          <div class="stat-description">BTTS</div>
-          <div class="footer-red"></div>
-        </div>
-      </div>
+</div>
 
-      <div class="col-md-4">
-        <div class="stat-box">
-          <div class="stat-number">10%</div>
-          <div class="stat-description">Clean Sheets (Southampton)</div>
-          <div class="footer-yellow"></div>
+<div class="row-team">
+    <!-- Tabella Home Team -->
+    <div class="team-table">
+        <div class="team-header">
+            <img src="https://media.api-sports.io/football/teams/{{ $homeTeam->team_id }}.png" alt="{{ $homeTeam->name }}" class="team-logo">
+            <div>
+                <h4>{{ $homeTeam->name }}</h4>
+                <p style="color:#f0eeee">Forma attuale:{{ $homeTeam->fascia }}</p>
+            </div>
         </div>
-      </div>
+        <table class="team-stats">
+            <thead>
+                <tr>
+                    <th></th>
+                    <th>Generale</th>
+                    <th>Casa</th>
+                    <th>Ospite</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Gol Fatti -->
+                <tr>
+                    <td>Gol Fatti</td>
+                    <td>{{ $homeTeam->t_goals_for }}</td>
+                    <td>{{ $homeTeam->h_goals_for }}</td>
+                    <td>{{ $homeTeam->a_goals_for }}</td>
+                </tr>
+                <!-- Gol Subiti -->
+                <tr>
+                    <td>Gol Subiti</td>
+                    <td>{{ $homeTeam->t_goals_against }}</td>
+                    <td>{{ $homeTeam->h_goals_against }}</td>
+                    <td>{{ $homeTeam->a_goals_against }}</td>
+                </tr>
+                <!-- Media Gol Fatti a partita -->
+                <tr>
+                    <td>Media Gol Fatti a Partita</td>
+                    <td>{{ $homeTeam->t_played > 0 ? round($homeTeam->t_goals_for / $homeTeam->t_played, 2) : 0 }}</td>
+                    <td>{{ $homeTeam->h_played > 0 ? round($homeTeam->h_goals_for / $homeTeam->h_played, 2) : 0 }}</td>
+                    <td>{{ $homeTeam->a_played > 0 ? round($homeTeam->a_goals_for / $homeTeam->a_played, 2) : 0 }}</td>
+                </tr>
+                <!-- Over 1.5 -->
+                <tr>
+                    <td>Over 1.5</td>
+                    <td>{{ $homeTeam->t_played > 0 ? round(($homeTeam->t_over_1_5_ft / $homeTeam->t_played) * 100, 2) : 0 }}%</td>
+                    <td>{{ $homeTeam->h_played > 0 ? round(($homeTeam->t_over_1_5_h / $homeTeam->h_played) * 100, 2) : 0 }}%</td>
+                    <td>{{ $homeTeam->a_played > 0 ? round(($homeTeam->t_over_1_5_h / $homeTeam->a_played) * 100, 2) : 0 }}%</td>
+                </tr>
+                <!-- Over 2.5 -->
+                <tr>
+                    <td>Over 2.5</td>
+                    <td>{{ $homeTeam->t_played > 0 ? round(($homeTeam->t_over_2_5_ft / $homeTeam->t_played) * 100, 2) : 0 }}%</td>
+                    <td></td>
+                    <td></td>
+                </tr>
+                <!-- Over 3.5 -->
+                <tr>
+                    <td>Over 3.5</td>
+                    <td>{{ $homeTeam->t_played > 0 ? round(($homeTeam->t_over_3_5_ft / $homeTeam->t_played) * 100, 2) : 0 }}%</td>
+                    <td></td>
+                    <td></td>
+                </tr>
+                <!-- Gol Gol (Entrambe le squadre segnano) -->
+                <tr>
+                    <td>Gol Gol</td>
+                    <td>{{ $homeTeam->t_played > 0 ? round(($homeTeam->t_gg_ft / $homeTeam->t_played) * 100, 2) : 0 }}%</td>
+                    <td></td>
+                    <td></td>
+                </tr>
+            </tbody>
+        </table>
 
-      <div class="col-md-4">
-        <div class="stat-box">
-          <div class="stat-number">50%</div>
-          <div class="stat-description">Clean Sheets (Brentford)</div>
-          <div class="footer-red"></div>
-        </div>
-      </div>
+
     </div>
+
+    <!-- Tabella Away Team -->
+    <div class="team-table">
+        <div class="team-header">
+            <img src="https://media.api-sports.io/football/teams/{{ $awayTeam->team_id }}.png" alt="{{ $awayTeam->name }}" class="team-logo">
+            <div>
+                <h4>{{ $awayTeam->name }}</h4>
+                <p style="color:#f0eeee">Forma attuale:{{ $awayTeam->fascia }}</p>
+            </div>
+        </div>
+        <table class="team-stats">
+            <thead>
+                <tr>
+                    <th></th>
+                    <th>Generale</th>
+                    <th>Casa</th>
+                    <th>Ospite</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Gol Fatti -->
+                <tr>
+                    <td>Gol Fatti</td>
+                    <td>{{ $awayTeam->t_goals_for }}</td>
+                    <td>{{ $awayTeam->h_goals_for }}</td>
+                    <td>{{ $awayTeam->a_goals_for }}</td>
+                </tr>
+                <!-- Gol Subiti -->
+                <tr>
+                    <td>Gol Subiti</td>
+                    <td>{{ $awayTeam->t_goals_against }}</td>
+                    <td>{{ $awayTeam->h_goals_against }}</td>
+                    <td>{{ $awayTeam->a_goals_against }}</td>
+                </tr>
+                <!-- Media Gol Fatti a partita -->
+                <tr>
+                    <td>Media Gol Fatti a Partita</td>
+                    <td>{{ $awayTeam->t_played > 0 ? round($awayTeam->t_goals_for / $awayTeam->t_played, 2) : 0 }}</td>
+                    <td>{{ $awayTeam->h_played > 0 ? round($awayTeam->h_goals_for / $awayTeam->h_played, 2) : 0 }}</td>
+                    <td>{{ $awayTeam->a_played > 0 ? round($awayTeam->a_goals_for / $awayTeam->a_played, 2) : 0 }}</td>
+                </tr>
+                <!-- Over 1.5 -->
+                <tr>
+                    <td>Over 1.5</td>
+                    <td>{{ $awayTeam->t_played > 0 ? round(($awayTeam->t_over_1_5_ft / $awayTeam->t_played) * 100, 2) : 0 }}%</td>
+                    <td>{{ $awayTeam->h_played > 0 ? round(($awayTeam->t_over_1_5_h / $awayTeam->h_played) * 100, 2) : 0 }}%</td>
+                    <td>{{ $awayTeam->a_played > 0 ? round(($awayTeam->t_over_1_5_h / $awayTeam->a_played) * 100, 2) : 0 }}%</td>
+                </tr>
+                <!-- Over 2.5 -->
+                <tr>
+                    <td>Over 2.5</td>
+                    <td>{{ $awayTeam->t_played > 0 ? round(($awayTeam->t_over_2_5_ft / $awayTeam->t_played) * 100, 2) : 0 }}%</td>
+                    <td></td>
+                    <td></td>
+                </tr>
+                <!-- Over 3.5 -->
+                <tr>
+                    <td>Over 3.5</td>
+                    <td>{{ $awayTeam->t_played > 0 ? round(($awayTeam->t_over_3_5_ft / $awayTeam->t_played) * 100, 2) : 0 }}%</td>
+                    <td></td>
+                    <td></td>
+                </tr>
+                <!-- Gol Gol (Entrambe le squadre segnano) -->
+                <tr>
+                    <td>Gol Gol</td>
+                    <td>{{ $awayTeam->t_played > 0 ? round(($awayTeam->t_gg_ft / $awayTeam->t_played) * 100, 2) : 0 }}%</td>
+                    <td></td>
+                    <td></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+
+
 
 </div>
 
