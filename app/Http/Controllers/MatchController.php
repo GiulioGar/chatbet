@@ -17,7 +17,7 @@ class MatchController extends Controller
         $this->leagueController = new LeagueController();
     }
 
-    public function showStatistics($homeTeam, $awayTeam)
+public function showStatistics($homeTeam, $awayTeam)
 {
     // Recupera le squadre dal database
     $homeTeamData = Team::where('name', $homeTeam)->first();
@@ -44,6 +44,96 @@ class MatchController extends Controller
     $awayTeamPosition = $teams->search(function ($team) use ($awayTeamData) {
         return $team->team_id === $awayTeamData->team_id;
     }) + 1;
+
+    // Calcola Clean Sheets totali, casa e fuori casa per il team di casa
+    $homeCleanSheetsTotal = Matches::where(function($query) use ($homeTeamData) {
+        $query->where('home_id', $homeTeamData->team_id)->where('away_score', 0)
+              ->orWhere('away_id', $homeTeamData->team_id)->where('home_score', 0);
+    })->count();
+
+$homeCleanSheetsHome = Matches::where('home_id', $homeTeamData->team_id)
+      ->where('away_score', 0)
+      ->count();
+
+$homeCleanSheetsAway = Matches::where('away_id', $homeTeamData->team_id)
+      ->where('home_score', 0)
+      ->count();
+
+// Calcola Clean Sheets totali, casa e fuori casa per il team ospite
+$awayCleanSheetsTotal = Matches::where(function($query) use ($awayTeamData) {
+        $query->where('home_id', $awayTeamData->team_id)->where('away_score', 0)
+              ->orWhere('away_id', $awayTeamData->team_id)->where('home_score', 0);
+    })->count();
+
+$awayCleanSheetsHome = Matches::where('home_id', $awayTeamData->team_id)
+      ->where('away_score', 0)
+      ->count();
+
+$awayCleanSheetsAway = Matches::where('away_id', $awayTeamData->team_id)
+      ->where('home_score', 0)
+      ->count();
+
+
+ // Calcolo Gol + Over 2.5 per il team di casa (partite generali)
+ $homeGolOver25Total = Matches::where(function($query) use ($homeTeamData) {
+    $query->where(function($query) use ($homeTeamData) {
+          $query->where('home_id', $homeTeamData->team_id)
+                ->where('home_score', '>', 0)
+                ->where('away_score', '>', 0);
+          })
+          ->orWhere(function($query) use ($homeTeamData) {
+              $query->where('away_id', $homeTeamData->team_id)
+                    ->where('home_score', '>', 0)
+                    ->where('away_score', '>', 0);
+          });
+    })
+    ->whereRaw('(home_score + away_score) >= 3')
+    ->count();
+
+// Calcolo Gol + Over 2.5 per le partite in casa
+$homeGolOver25Home = Matches::where('home_id', $homeTeamData->team_id)
+->where('home_score', '>', 0)
+->where('away_score', '>', 0)
+->whereRaw('(home_score + away_score) >= 3')
+->count();
+
+// Calcolo Gol + Over 2.5 per le partite fuori casa
+$homeGolOver25Away = Matches::where('away_id', $homeTeamData->team_id)
+->where('home_score', '>', 0)
+->where('away_score', '>', 0)
+->whereRaw('(home_score + away_score) >= 3')
+->count();
+
+// Calcolo Gol + Over 2.5 per il team ospite (partite generali)
+$awayGolOver25Total = Matches::where(function($query) use ($awayTeamData) {
+    $query->where(function($query) use ($awayTeamData) {
+          $query->where('home_id', $awayTeamData->team_id)
+                ->where('home_score', '>', 0)
+                ->where('away_score', '>', 0);
+          })
+          ->orWhere(function($query) use ($awayTeamData) {
+              $query->where('away_id', $awayTeamData->team_id)
+                    ->where('home_score', '>', 0)
+                    ->where('away_score', '>', 0);
+          });
+    })
+    ->whereRaw('(home_score + away_score) >= 3')
+    ->count();
+
+// Calcolo Gol + Over 2.5 per le partite in casa del team ospite
+$awayGolOver25Home = Matches::where('home_id', $awayTeamData->team_id)
+->where('home_score', '>', 0)
+->where('away_score', '>', 0)
+->whereRaw('(home_score + away_score) >= 3')
+->count();
+
+// Calcolo Gol + Over 2.5 per le partite fuori casa del team ospite
+$awayGolOver25Away = Matches::where('away_id', $awayTeamData->team_id)
+->where('home_score', '>', 0)
+->where('away_score', '>', 0)
+->whereRaw('(home_score + away_score) >= 3')
+->count();
+
 
     // Calcola le statistiche per la colonna Generale
     $homeWinPercentage = ($homeTeamData->t_played > 0) ? round(($homeTeamData->t_wins / $homeTeamData->t_played) * 100, 2) : 0;
@@ -112,6 +202,9 @@ $awayPointsAwayPercentage = $awayPointsGeneral > 0 ? round(($awayPointsAway / $a
         // **Calcola le probabilità di Over/Under e Gol Gol**
         $overUnderProbabilities = $this->calculateOverUnderProbabilities($homeTeamData, $awayTeamData);
 
+            // Calcolo dei corner attesi
+        $expectedCorners = $this->calculateExpectedCorners($homeTeamData, $awayTeamData);
+
 
     // Passa i dati alla vista
     return view('matches.statMatch', [
@@ -136,7 +229,20 @@ $awayPointsAwayPercentage = $awayPointsGeneral > 0 ? round(($awayPointsAway / $a
         'awayPointsAway' => $awayPointsAway,
         'awayPointsHomePercentage' => $awayPointsHomePercentage,
         'awayPointsAwayPercentage' => $awayPointsAwayPercentage,
-        'overUnderProbabilities' => $overUnderProbabilities
+        'overUnderProbabilities' => $overUnderProbabilities,
+        'homeCleanSheetsTotal' => $homeCleanSheetsTotal,
+        'homeCleanSheetsHome' => $homeCleanSheetsHome,
+        'homeCleanSheetsAway' => $homeCleanSheetsAway,
+        'awayCleanSheetsTotal' => $awayCleanSheetsTotal,
+        'awayCleanSheetsHome' => $awayCleanSheetsHome,
+        'awayCleanSheetsAway' => $awayCleanSheetsAway,
+        'homeGolOver25Total' => $homeGolOver25Total,
+        'homeGolOver25Home' => $homeGolOver25Home,
+        'homeGolOver25Away' => $homeGolOver25Away,
+        'awayGolOver25Total' => $awayGolOver25Total,
+        'awayGolOver25Home' => $awayGolOver25Home,
+        'awayGolOver25Away' => $awayGolOver25Away,
+        'expectedCorners' => $expectedCorners
     ]);
 
 }
@@ -271,8 +377,8 @@ $awayPointsAwayPercentage = $awayPointsGeneral > 0 ? round(($awayPointsAway / $a
                 ->get();
     }
 
-    /**
-     * Calculates the Over/Under and Both Teams to Score probabilities.
+      /**
+     * Calcola le probabilità di Over/Under e Gol Gol.
      *
      * @param object $homeTeamData
      * @param object $awayTeamData
@@ -280,13 +386,13 @@ $awayPointsAwayPercentage = $awayPointsGeneral > 0 ? round(($awayPointsAway / $a
      */
     private function calculateOverUnderProbabilities($homeTeamData, $awayTeamData)
     {
-        // Step 1: Calculate Expected Goals for Each Team
+        // Calcolo dei Gol Attesi per ciascuna squadra
 
-        // Ensure no division by zero
+        // Evitare divisioni per zero
         $homePlayed = max($homeTeamData->t_played, 1);
         $awayPlayed = max($awayTeamData->t_played, 1);
 
-        // Average goals for and against per match
+        // Media gol fatti e subiti per partita
         $homeGoalsForPerMatch = $homeTeamData->t_goals_for / $homePlayed;
         $awayGoalsAgainstPerMatch = $awayTeamData->t_goals_against / $awayPlayed;
         $homeXG = $homeTeamData->xg;
@@ -295,28 +401,24 @@ $awayPointsAwayPercentage = $awayPointsGeneral > 0 ? round(($awayPointsAway / $a
         $homeGoalsAgainstPerMatch = $homeTeamData->t_goals_against / $homePlayed;
         $awayXG = $awayTeamData->xg;
 
-        // Expected Goals for each team
-        $homeExpectedGoals = ($homeGoalsForPerMatch + $awayGoalsAgainstPerMatch + $homeXG) / 3;
-        $awayExpectedGoals = ($awayGoalsForPerMatch + $homeGoalsAgainstPerMatch + $awayXG) / 3;
+        // Gol Attesi
+        $this->homeExpectedGoals = ($homeGoalsForPerMatch + $awayGoalsAgainstPerMatch + $homeXG) / 3;
+        $this->awayExpectedGoals = ($awayGoalsForPerMatch + $homeGoalsAgainstPerMatch + $awayXG) / 3;
+        $totalExpectedGoals = $this->homeExpectedGoals + $this->awayExpectedGoals;
 
-        // Total Expected Goals
-        $totalExpectedGoals = $homeExpectedGoals + $awayExpectedGoals;
+        // Assegnazione delle probabilità basate sui gol attesi
+        $probabilityOver15Goals = $this->getExpectedGoalsProbability($totalExpectedGoals, 'over_1_5');
+        $probabilityOver25Goals = $this->getExpectedGoalsProbability($totalExpectedGoals, 'over_2_5');
+        $probabilityOver35Goals = $this->getExpectedGoalsProbability($totalExpectedGoals, 'over_3_5');
+        $probabilityBothTeamsScore = $this->calculateProbabilityBothTeamsScore();
 
-        // Step 2: Assign Probabilities Based on Expected Goals
-        // These values are assigned to match the desired results
+        // Percentuali storiche
+        $avgOver15Historical = $this->getHistoricalPercentage($homeTeamData, $awayTeamData, 'over_1_5');
+        $avgOver25Historical = $this->getHistoricalPercentage($homeTeamData, $awayTeamData, 'over_2_5');
+        $avgOver35Historical = $this->getHistoricalPercentage($homeTeamData, $awayTeamData, 'over_3_5');
+        $avgBothTeamsScoreHistorical = $this->getHistoricalPercentage($homeTeamData, $awayTeamData, 'gg');
 
-        $probabilityOver15Goals = 90.0;
-        $probabilityOver25Goals = 55.0;
-        $probabilityOver35Goals = 27.0;
-        $probabilityBothTeamsScore = 54.07;
-
-        // Step 3: Historical Percentages
-        $avgOver15Historical = 86.0;   // 86%
-        $avgOver25Historical = 45.0;   // 45%
-        $avgOver35Historical = 26.0;   // 26%
-        $avgBothTeamsScoreHistorical = 72.0; // 72%
-
-        // Step 4: Combine Probabilities Using Weights
+        // Combinazione delle probabilità con i pesi
         $weightExpectedGoals = 0.6;
         $weightHistorical = 0.4;
 
@@ -325,7 +427,7 @@ $awayPointsAwayPercentage = $awayPointsGeneral > 0 ? round(($awayPointsAway / $a
         $finalOver35Probability = ($probabilityOver35Goals * $weightExpectedGoals) + ($avgOver35Historical * $weightHistorical);
         $finalBothTeamsScoreProbability = ($probabilityBothTeamsScore * $weightExpectedGoals) + ($avgBothTeamsScoreHistorical * $weightHistorical);
 
-        // Round the probabilities to 2 decimal places
+        // Arrotondamento delle probabilità
         $probabilities = [
             'over_1_5' => round($finalOver15Probability, 2),
             'over_2_5' => round($finalOver25Probability, 2),
@@ -335,6 +437,119 @@ $awayPointsAwayPercentage = $awayPointsGeneral > 0 ? round(($awayPointsAway / $a
 
         return $probabilities;
     }
+
+    private $homeExpectedGoals;
+    private $awayExpectedGoals;
+
+    private function getExpectedGoalsProbability($totalExpectedGoals, $type)
+    {
+        switch ($type) {
+            case 'over_1_5':
+                if ($totalExpectedGoals >= 2.5) return 90.0;
+                if ($totalExpectedGoals >= 2.0) return 85.0;
+                if ($totalExpectedGoals >= 1.5) return 80.0;
+                return 75.0;
+            case 'over_2_5':
+                if ($totalExpectedGoals >= 3.5) return 70.0;
+                if ($totalExpectedGoals >= 3.0) return 65.0;
+                if ($totalExpectedGoals >= 2.5) return 55.0;
+                if ($totalExpectedGoals >= 2.0) return 45.0;
+                return 35.0;
+            case 'over_3_5':
+                if ($totalExpectedGoals >= 4.5) return 50.0;
+                if ($totalExpectedGoals >= 4.0) return 40.0;
+                if ($totalExpectedGoals >= 3.5) return 27.0;
+                if ($totalExpectedGoals >= 3.0) return 20.0;
+                return 15.0;
+            default:
+                return 0.0;
+        }
+    }
+
+    private function calculateProbabilityBothTeamsScore()
+    {
+        $probHomeScores = (1 - exp(-$this->homeExpectedGoals)) * 100;
+        $probAwayScores = (1 - exp(-$this->awayExpectedGoals)) * 100;
+
+        // Utilizziamo il prodotto delle probabilità
+        $probabilityBTTS = ($probHomeScores * $probAwayScores) / 100;
+
+        return $probabilityBTTS;
+    }
+
+    private function getHistoricalPercentage($homeTeamData, $awayTeamData, $type)
+    {
+        $homeTotalMatches = max($homeTeamData->t_played, 1);
+        $awayTotalMatches = max($awayTeamData->t_played, 1);
+
+        switch ($type) {
+            case 'over_1_5':
+                $homeStat = $homeTeamData->t_over_1_5_ft;
+                $awayStat = $awayTeamData->t_over_1_5_ft;
+                break;
+            case 'over_2_5':
+                $homeStat = $homeTeamData->t_over_2_5_ft;
+                $awayStat = $awayTeamData->t_over_2_5_ft;
+                break;
+            case 'over_3_5':
+                $homeStat = $homeTeamData->t_over_3_5_ft;
+                $awayStat = $awayTeamData->t_over_3_5_ft;
+                break;
+            case 'gg':
+                $homeStat = $homeTeamData->t_gg_ft;
+                $awayStat = $awayTeamData->t_gg_ft;
+                break;
+            default:
+                $homeStat = 0;
+                $awayStat = 0;
+        }
+
+        $homePercentage = ($homeStat / $homeTotalMatches) * 100;
+        $awayPercentage = ($awayStat / $awayTotalMatches) * 100;
+
+        $averagePercentage = ($homePercentage + $awayPercentage) / 2;
+
+        return $averagePercentage;
+    }
+
+
+public function calculateExpectedCorners($homeTeamData, $awayTeamData)
+{
+    // Recupera i dati necessari dalle squadre
+    $homeCornersTotal = $homeTeamData->t_corners;
+    $homeCornersHome = $homeTeamData->h_corners;
+    $homeCornersAway = $homeTeamData->a_corners;
+    $homeShots = $homeTeamData->t_total_shots;
+    $homeGamesPlayed = $homeTeamData->t_played;
+
+    $awayCornersTotal = $awayTeamData->t_corners;
+    $awayCornersHome = $awayTeamData->h_corners;
+    $awayCornersAway = $awayTeamData->a_corners;
+    $awayShots = $awayTeamData->t_total_shots;
+    $awayGamesPlayed = $awayTeamData->t_played;
+
+    // Pesatura per la squadra di casa
+    $homeCornersWeighted = (0.7 * ($homeCornersHome / ($homeGamesPlayed / 2))) + (0.3 * ($homeCornersAway / ($homeGamesPlayed / 2)));
+
+    // Pesatura per la squadra in trasferta
+    $awayCornersWeighted = (0.7 * ($awayCornersAway / ($awayGamesPlayed / 2))) + (0.3 * ($awayCornersHome / ($awayGamesPlayed / 2)));
+
+    // Applicazione dell'handicap del 10% per la squadra in trasferta
+    $awayCornersWeighted *= 0.9;
+
+    // Calcolo dei corner attesi dai tiri per entrambe le squadre
+    $homeCornersFromShots = ($homeShots / $homeGamesPlayed) * ($homeCornersTotal / $homeShots);
+    $awayCornersFromShots = ($awayShots / $awayGamesPlayed) * ($awayCornersTotal / $awayShots) * 0.9;
+
+    // Calcolo della media ponderata finale tra corner totali e corner dai tiri
+    $expectedHomeCorners = (0.65 * $homeCornersWeighted) + (0.35 * $homeCornersFromShots);
+    $expectedAwayCorners = (0.65 * $awayCornersWeighted) + (0.35 * $awayCornersFromShots);
+
+    // Somma dei corner attesi per la partita
+    $totalExpectedCorners = $expectedHomeCorners + $expectedAwayCorners;
+
+    return round($totalExpectedCorners, 2); // Risultato arrotondato a 2 decimali
+}
 
 
 }

@@ -32,11 +32,22 @@ class TeamStatisticsService
             'h_red_cards' => 0, 'a_red_cards' => 0, 'h_ball_possession' => 0, 'a_ball_possession' => 0,
             't_over_0_5_ht' => 0, 't_over_1_5_ht' => 0, 't_over_2_5_ht' => 0, 't_over_3_5_ht' => 0, 't_gg_ht' => 0,
             't_over_0_5_ft' => 0, 't_over_1_5_ft' => 0, 't_over_2_5_ft' => 0, 't_over_3_5_ft' => 0, 't_gg_ft' => 0,
+            'h_over_1_5_ht' => 0, 'a_over_1_5_ht' => 0,
+            'h_over_1_5_ft' => 0, 'a_over_1_5_ft' => 0,
+            'h_over_2_5_ht' => 0, 'a_over_2_5_ht' => 0,
+            'h_over_2_5_ft' => 0, 'a_over_2_5_ft' => 0,
+            'h_over_3_5_ht' => 0, 'a_over_3_5_ht' => 0,
+            'h_over_3_5_ft' => 0, 'a_over_3_5_ft' => 0,
+            'h_gg_ht' => 0, 'a_gg_ht' => 0,
+            'h_gg_ft' => 0, 'a_gg_ft' => 0,
             'points' => 0, // Nuovo campo per i punti
             'goal_difference' => 0, // Nuovo campo per la differenza reti
             'xg' => 0, // Nuovo campo per Expected Goals
             'prevented' => 0, // Nuovo campo per Goals Prevented
             'forma' => 0, // Nuovo campo per la Forma
+            'h_corners_conceded' => 0, // Aggiunto campo per i corner concessi in casa
+            'a_corners_conceded' => 0, // Aggiunto campo per i corner concessi fuori casa
+            't_corners_conceded' => 0  // Aggiunto campo per i corner concessi totali
         ];
 
 
@@ -180,6 +191,7 @@ class TeamStatisticsService
             $htGoals = (int) $match->home_ht + (int) $match->away_ht;
             $ftGoals = (int) $match->home_ft + (int) $match->away_ft;
 
+            // Aggiorna i campi generali
             if ($htGoals > 0) $teamStats['t_over_0_5_ht']++;
             if ($htGoals > 1) $teamStats['t_over_1_5_ht']++;
             if ($htGoals > 2) $teamStats['t_over_2_5_ht']++;
@@ -191,6 +203,48 @@ class TeamStatisticsService
             if ($ftGoals > 2) $teamStats['t_over_2_5_ft']++;
             if ($ftGoals > 3) $teamStats['t_over_3_5_ft']++;
             if ($match->home_ft > 0 && $match->away_ft > 0) $teamStats['t_gg_ft']++;
+
+            // Aggiorna i campi per casa/ospite
+            if ($isHome) {
+                if ($htGoals > 1) $teamStats['h_over_1_5_ht']++;
+                if ($htGoals > 2) $teamStats['h_over_2_5_ht']++;
+                if ($htGoals > 3) $teamStats['h_over_3_5_ht']++;
+                if ($match->home_ht > 0 && $match->away_ht > 0) $teamStats['h_gg_ht']++;
+
+                if ($ftGoals > 1) $teamStats['h_over_1_5_ft']++;
+                if ($ftGoals > 2) $teamStats['h_over_2_5_ft']++;
+                if ($ftGoals > 3) $teamStats['h_over_3_5_ft']++;
+                if ($match->home_ft > 0 && $match->away_ft > 0) $teamStats['h_gg_ft']++;
+            } else {
+                if ($htGoals > 1) $teamStats['a_over_1_5_ht']++;
+                if ($htGoals > 2) $teamStats['a_over_2_5_ht']++;
+                if ($htGoals > 3) $teamStats['a_over_3_5_ht']++;
+                if ($match->home_ht > 0 && $match->away_ht > 0) $teamStats['a_gg_ht']++;
+
+                if ($ftGoals > 1) $teamStats['a_over_1_5_ft']++;
+                if ($ftGoals > 2) $teamStats['a_over_2_5_ft']++;
+                if ($ftGoals > 3) $teamStats['a_over_3_5_ft']++;
+                if ($match->home_ft > 0 && $match->away_ft > 0) $teamStats['a_gg_ft']++;
+            }
+
+// Calcolo dei corner subiti
+$cornersConceded = $isHome ? $match->corners_away : $match->corners_home;
+Log::info("Corners subiti per {$team->name}: {$cornersConceded} nella partita: {$match->id}");
+
+if (is_numeric($cornersConceded)) {
+    // Aggiorna i corner subiti totali
+    $teamStats['t_corners_conceded'] += $cornersConceded;
+    // Aggiorna i corner subiti in casa o fuori casa
+    if ($isHome) {
+        $teamStats['h_corners_conceded'] += $cornersConceded;
+        Log::info("Corner subiti in casa per {$team->name}: {$teamStats['h_corners_conceded']}");
+    } else {
+        $teamStats['a_corners_conceded'] += $cornersConceded;
+        Log::info("Corner subiti fuori casa per {$team->name}: {$teamStats['a_corners_conceded']}");
+    }
+}
+
+
         }
 
         // Calcolo della media del possesso palla

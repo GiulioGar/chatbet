@@ -26,7 +26,7 @@ class Team extends Model
         't_over_0_5_ht', 't_over_0_5_ft', 't_over_1_5_ht', 't_over_1_5_ft',
         't_over_2_5_ht', 't_over_2_5_ft', 't_over_3_5_ht', 't_over_3_5_ft',
         't_gg_ht', 't_gg_ft','level', 'points',
-        'goal_difference','stadio','xg', 'prevented', 'forma','fascia'
+        'goal_difference','stadio','xg', 'prevented', 'forma','fascia', 'h_corners_conceded', 'a_corners_conceded'
     ];
 
 
