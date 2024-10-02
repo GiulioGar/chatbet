@@ -135,6 +135,36 @@ $awayGolOver25Away = Matches::where('away_id', $awayTeamData->team_id)
 ->count();
 
 
+// Calcolo dei corner per Over 6 fino a Over 13
+$matches = Matches::where(function($query) use ($homeTeamData, $awayTeamData) {
+    $query->where('home_id', $homeTeamData->team_id)
+          ->orWhere('away_id', $awayTeamData->team_id);
+})->get();
+
+// Inizializza le soglie per Over e i contatori
+$thresholds = range(6, 13); // Da Over 6 a Over 13
+$overCounters = array_fill_keys($thresholds, 0); // Inizializza contatori a 0
+$totalMatches = $matches->count();
+
+foreach ($matches as $match) {
+    $totalCorners = $match->corners_home + $match->corners_away;
+
+    // Incrementa i contatori per ogni soglia
+    foreach ($thresholds as $threshold) {
+        if ($totalCorners > $threshold) {
+            $overCounters[$threshold]++;
+        }
+    }
+}
+
+// Calcola le percentuali
+$overPercentages = [];
+foreach ($overCounters as $threshold => $count) {
+    $overPercentages[$threshold] = $totalMatches > 0 ? round(($count / $totalMatches) * 100, 2) : 0;
+}
+
+
+
     // Calcola le statistiche per la colonna Generale
     $homeWinPercentage = ($homeTeamData->t_played > 0) ? round(($homeTeamData->t_wins / $homeTeamData->t_played) * 100, 2) : 0;
     $homeDrawPercentage = ($homeTeamData->t_played > 0) ? round(($homeTeamData->t_draws / $homeTeamData->t_played) * 100, 2) : 0;
@@ -182,6 +212,8 @@ $awayPointsHomePercentage = $awayPointsGeneral > 0 ? round(($awayPointsHome / $a
 $awayPointsAwayPercentage = $awayPointsGeneral > 0 ? round(($awayPointsAway / $awayPointsGeneral) * 100, 2) : 0;
 
 
+
+
     // Calcola le probabilità di vittoria, pareggio e sconfitta
     try {
         $matchProbabilities = $this->calculateMatchProbabilities($teamScores['homeTeamScore'], $teamScores['awayTeamScore']);
@@ -204,6 +236,10 @@ $awayPointsAwayPercentage = $awayPointsGeneral > 0 ? round(($awayPointsAway / $a
 
             // Calcolo dei corner attesi
         $expectedCorners = $this->calculateExpectedCorners($homeTeamData, $awayTeamData);
+
+         // Calcolo delle percentuali
+        $overPercentages = $this->calculateOverPercentages($homeTeamData, $awayTeamData);
+
 
 
     // Passa i dati alla vista
@@ -242,7 +278,8 @@ $awayPointsAwayPercentage = $awayPointsGeneral > 0 ? round(($awayPointsAway / $a
         'awayGolOver25Total' => $awayGolOver25Total,
         'awayGolOver25Home' => $awayGolOver25Home,
         'awayGolOver25Away' => $awayGolOver25Away,
-        'expectedCorners' => $expectedCorners
+        'expectedCorners' => $expectedCorners,
+        'overPercentages' => $overPercentages, // Passa le percentuali alla vista
     ]);
 
 }
@@ -550,6 +587,38 @@ public function calculateExpectedCorners($homeTeamData, $awayTeamData)
 
     return round($totalExpectedCorners, 2); // Risultato arrotondato a 2 decimali
 }
+
+public function calculateOverPercentages($teamData, $opponentData)
+{
+    $overPercentages = [];
+
+    // Definiamo le soglie degli Over corner (da 6 a 13)
+    $thresholds = range(6, 13);
+
+    // Funzione per calcolare la percentuale di Over corner
+    $calculateOverPercentage = function($team, $threshold) {
+        $overMatches = Matches::where(function ($query) use ($team) {
+            $query->where('home_id', $team->team_id)
+                  ->orWhere('away_id', $team->team_id);
+        })
+        ->whereRaw('(corners_home + corners_away) > ?', [$threshold])
+        ->count();
+
+        $totalMatches = max($team->t_played, 1); // Evita divisioni per 0
+        return round(($overMatches / $totalMatches) * 100, 2);
+    };
+
+    // Ciclo per calcolare le percentuali per ogni soglia
+    foreach ($thresholds as $threshold) {
+        $overPercentages[$threshold] = [
+            'home' => $calculateOverPercentage($teamData, $threshold),
+            'away' => $calculateOverPercentage($opponentData, $threshold)
+        ];
+    }
+
+    return $overPercentages;
+}
+
 
 
 }

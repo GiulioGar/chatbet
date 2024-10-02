@@ -523,21 +523,19 @@
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        <tr>
-                                            <td>Over 6</td>
-                                            <td><i class="fa fa-lock"></i></td>
-                                            <td><i class="fa fa-lock"></i></td>
-                                            <td><i class="fa fa-lock"></i></td>
-                                        </tr>
-                                        <tr>
-                                            <td>Over 7</td>
-                                            <td><i class="fa fa-lock"></i></td>
-                                            <td><i class="fa fa-lock"></i></td>
-                                            <td><i class="fa fa-lock"></i></td>
-                                        </tr>
-                                        <!-- Aggiungi altre righe come necessario -->
+                                        @foreach ($overPercentages as $threshold => $data)
+                                            <tr>
+                                                <td>Over {{ $threshold }}</td>
+                                                <td>{{ $data['home'] }}%</td>
+                                                <td>{{ $data['away'] }}%</td>
+                                                <td>{{ round(($data['home'] + $data['away']) / 2, 2) }}%</td>
+                                            </tr>
+                                        @endforeach
                                     </tbody>
                                 </table>
+
+
+
                             </div>
                         </div>
                         <div class="tab-pane fade" id="primo-secondo" role="tabpanel" aria-labelledby="first-second-tab">
