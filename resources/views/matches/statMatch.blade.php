@@ -483,7 +483,7 @@
             <div class="custom-card-light p-3">
                 <div class="custom-header-light d-flex align-items-center justify-content-between mb-3">
                     <div class="d-flex align-items-center">
-                        <img src="{{ asset('images/corner.png') }}" alt="Corner icon" class="mr-3" style="width: 40px;">
+                        <img src="{{ asset('images/corner.png') }}" alt="Corner icon" class="mr-3" style="width: 70px;">
                         <div>
                             <h5 class="mb-1">Corners/Partita</h5>
                             <p class="small mb-0 custom-highlight">Linea Corner:  {{ $expectedCorners }}</p>
@@ -543,11 +543,222 @@
                         </div>
                     </div>
                 </div>
+
+
             </div>
         </div>
     </div>
 
+    <div class="row">
+        <div class="col-md-12">
+            <div class="custom-card-light p-3">
+                <div class="custom-header-light d-flex align-items-center justify-content-between mb-3">
+                    <div class="d-flex align-items-center">
+                        <img src="{{ asset('images/tiro.png') }}" alt="Tiri icon" class="mr-3" style="width: 70px;">
+                        <div>
+                            <h5 class="mb-1">Tiri Totali / Tiri in porta</h5>
+                        </div>
 
+                    </div>
+
+                </div>
+
+                <div class="row-team">
+                    <!-- Tabella Home Team -->
+                    <div class="team-table">
+                        <div class="team-header">
+                            <img src="https://media.api-sports.io/football/teams/{{ $homeTeam->team_id }}.png" alt="{{ $homeTeam->name }}" class="team-logo">
+                            <div>
+                                <h4>{{ $homeTeam->name }}</h4>
+                                <p style="color:#f0eeee">Difesa:{{ $homeTeam->fascia }}</p>
+                            </div>
+                        </div>
+                        <table class="team-stats">
+                            <thead>
+                                <tr>
+                                    <th></th>
+                                    <th>Totale</th>
+                                    <th>Casa</th>
+                                    <th>Ospite</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Gol Fatti -->
+                                <tr>
+                                    <td>Tiri totali</td>
+                                    <td>{{ number_format($homeTiriTotaliPonderati, 2) }}</td>
+                                    <td>{{ $homeTeam->h_played > 0 ? round($homeTeam->h_total_shots / $homeTeam->h_played, 2) : 0 }}</td>
+                                    <td>{{ $homeTeam->h_played > 0 ? round($homeTeam->a_total_shots / $homeTeam->h_played, 2) : 0 }}</td>
+
+                                </tr>
+                                <!-- Gol Subiti -->
+                                <tr>
+                                    <td>Tiri in porta</td>
+                                    <td>{{ number_format($homeTiriInPortaPonderati, 2) }}</td>
+                                    <td>{{ $homeTeam->h_played > 0 ? round($homeTeam->h_shots_on_goal / $homeTeam->h_played, 2) : 0 }}</td>
+                                    <td>{{ $homeTeam->h_played > 0 ? round($homeTeam->a_shots_on_goal / $homeTeam->h_played, 2) : 0 }}</td>
+                                </tr>
+                                <!-- Media Gol Fatti a partita -->
+                                <tr>
+                                    <td>Rapporto Tiri/Gol</td>
+                                    <td>{{ $homeTeam->t_played > 0 ? round(($homeTeam->t_goals_for / $homeTeam->t_played)/ ($homeTeam->t_shots_on_goal / $homeTeam->t_played) * 100, 2) : 0 }}%</td>
+                                    <td>{{ $homeTeam->t_played > 0 ? round(($homeTeam->h_goals_for / $homeTeam->h_played)/ ($homeTeam->h_shots_on_goal / $homeTeam->h_played) * 100, 2) : 0 }}%</td>
+                                    <td>{{ $homeTeam->t_played > 0 ? round(($homeTeam->a_goals_for / $homeTeam->a_played)/ ($homeTeam->a_shots_on_goal / $homeTeam->a_played) * 100, 2) : 0 }}%</td>
+
+                                </tr>
+                                <!-- Over 1.5 -->
+                                <tr>
+                                    <td>Over 1.5</td>
+                                    <td>{{ $homeTeam->t_played > 0 ? round(($homeTeam->t_over_1_5_ft / $homeTeam->t_played) * 100, 2) : 0 }}%</td>
+                                    <td>{{ $homeTeam->h_played > 0 ? round(($homeTeam->h_over_1_5_ft / $homeTeam->h_played) * 100, 2) : 0 }}%</td>
+                                    <td>{{ $homeTeam->a_played > 0 ? round(($homeTeam->a_over_1_5_ft / $homeTeam->a_played) * 100, 2) : 0 }}%</td>
+                                </tr>
+                                <!-- Over 2.5 -->
+                                <tr>
+                                    <td>Over 2.5</td>
+                                    <td>{{ $homeTeam->t_played > 0 ? round(($homeTeam->t_over_2_5_ft / $homeTeam->t_played) * 100, 2) : 0 }}%</td>
+                                    <td>{{ $homeTeam->h_played > 0 ? round(($homeTeam->h_over_2_5_ft / $homeTeam->h_played) * 100, 2) : 0 }}%</td>
+                                    <td>{{ $homeTeam->a_played > 0 ? round(($homeTeam->a_over_2_5_ft / $homeTeam->a_played) * 100, 2) : 0 }}%</td>
+                                </tr>
+                                <!-- Over 3.5 -->
+                                <tr>
+                                    <td>Over 3.5</td>
+                                    <td>{{ $homeTeam->t_played > 0 ? round(($homeTeam->t_over_3_5_ft / $homeTeam->t_played) * 100, 2) : 0 }}%</td>
+                                    <td>{{ $homeTeam->h_played > 0 ? round(($homeTeam->h_over_3_5_ft / $homeTeam->h_played) * 100, 2) : 0 }}%</td>
+                                    <td>{{ $homeTeam->a_played > 0 ? round(($homeTeam->a_over_3_5_ft / $homeTeam->a_played) * 100, 2) : 0 }}%</td>
+                                </tr>
+                                <!-- Gol Gol (Entrambe le squadre segnano) -->
+                                <tr>
+                                    <td>Gol Gol</td>
+                                    <td>{{ $homeTeam->t_played > 0 ? round(($homeTeam->t_gg_ft / $homeTeam->t_played) * 100, 2) : 0 }}%</td>
+                                    <td>{{ $homeTeam->h_played > 0 ? round(($homeTeam->h_gg_ft / $homeTeam->h_played) * 100, 2) : 0 }}%</td>
+                                    <td>{{ $homeTeam->a_played > 0 ? round(($homeTeam->a_gg_ft / $homeTeam->a_played) * 100, 2) : 0 }}%</td>
+                                </tr>
+
+                                        <!-- Gol + Over 2.5 -->
+                                    <tr>
+                                        <td>Gol + Over 2.5</td>
+                                        <td>{{ $homeTeam->t_played > 0 ? round(($homeGolOver25Total / $homeTeam->t_played) * 100, 2) : 0 }}%</td>
+                                        <td>{{ $homeTeam->h_played > 0 ? round(($homeGolOver25Home / $homeTeam->h_played) * 100, 2) : 0 }}%</td>
+                                        <td>{{ $homeTeam->a_played > 0 ? round(($homeGolOver25Away / $homeTeam->a_played) * 100, 2) : 0 }}%</td>
+                                    </tr>
+
+                                <tr>
+                                    <td>Clean Sheets</td>
+                                    <td>{{ $homeTeam->t_played > 0 ? round(($homeCleanSheetsTotal / $homeTeam->t_played) * 100, 2) : 0 }}%</td>
+                                    <td>{{ $homeTeam->h_played > 0 ? round(($homeCleanSheetsHome / $homeTeam->h_played) * 100, 2) : 0 }}%</td>
+                                    <td>{{ $homeTeam->a_played > 0 ? round(($homeCleanSheetsAway / $homeTeam->a_played) * 100, 2) : 0 }}%</td>
+                                </tr>
+
+                                <tr>
+                                    <td>Expected Gol</td>
+                                    <td colspan="3">{{ $homeTeam->xg }}</td>
+                                    </tr>
+
+                            </tbody>
+                        </table>
+
+
+                    </div>
+
+                    <!-- Tabella Away Team -->
+                    <div class="team-table">
+                        <div class="team-header">
+                            <img src="https://media.api-sports.io/football/teams/{{ $awayTeam->team_id }}.png" alt="{{ $awayTeam->name }}" class="team-logo">
+                            <div>
+                                <h4>{{ $awayTeam->name }}</h4>
+                                <p style="color:#f0eeee">Forma attuale:{{ $awayTeam->fascia }}</p>
+                            </div>
+                        </div>
+                        <table class="team-stats">
+                            <thead>
+                                <tr>
+                                    <th></th>
+                                    <th>Totale</th>
+                                    <th>Casa</th>
+                                    <th>Ospite</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Gol Fatti -->
+                                <tr>
+                                    <td>Tiri Totali</td>
+                                    <td>{{ number_format($awayTiriTotaliPonderati, 2) }}</td>
+                                    <td>{{ $awayTeam->h_goals_for }}</td>
+                                    <td>{{ $awayTeam->a_goals_for }}</td>
+                                </tr>
+                                <!-- Gol Subiti -->
+                                <tr>
+                                    <td>Tiri in porta</td>
+                                    <td>{{ number_format($awayTiriInPortaPonderati, 2) }}</td>
+                                    <td>{{ $awayTeam->h_goals_against }}</td>
+                                    <td>{{ $awayTeam->a_goals_against }}</td>
+                                </tr>
+                                <!-- Media Gol Fatti a partita -->
+                                <tr>
+                                    <td>Media Gol</td>
+                                    <td>{{ $awayTeam->t_played > 0 ? round($awayTeam->t_goals_for / $awayTeam->t_played, 2) : 0 }}</td>
+                                    <td>{{ $awayTeam->h_played > 0 ? round($awayTeam->h_goals_for / $awayTeam->h_played, 2) : 0 }}</td>
+                                    <td>{{ $awayTeam->a_played > 0 ? round($awayTeam->a_goals_for / $awayTeam->a_played, 2) : 0 }}</td>
+                                </tr>
+                                <!-- Over 1.5 -->
+                                <tr>
+                                    <td>Over 1.5</td>
+                                    <td>{{ $awayTeam->t_played > 0 ? round(($awayTeam->t_over_1_5_ft / $awayTeam->t_played) * 100, 2) : 0 }}%</td>
+                                    <td>{{ $awayTeam->h_played > 0 ? round(($awayTeam->h_over_1_5_ft / $awayTeam->h_played) * 100, 2) : 0 }}%</td>
+                                    <td>{{ $awayTeam->a_played > 0 ? round(($awayTeam->a_over_1_5_ft / $awayTeam->a_played) * 100, 2) : 0 }}%</td>
+                                </tr>
+                                <!-- Over 2.5 -->
+                                <tr>
+                                    <td>Over 2.5</td>
+                                    <td>{{ $awayTeam->t_played > 0 ? round(($awayTeam->t_over_2_5_ft / $awayTeam->t_played) * 100, 2) : 0 }}%</td>
+                                    <td>{{ $awayTeam->h_played > 0 ? round(($awayTeam->h_over_2_5_ft / $awayTeam->h_played) * 100, 2) : 0 }}%</td>
+                                    <td>{{ $awayTeam->a_played > 0 ? round(($awayTeam->a_over_2_5_ft / $awayTeam->a_played) * 100, 2) : 0 }}%</td>
+                                </tr>
+                                <!-- Over 3.5 -->
+                                <tr>
+                                    <td>Over 3.5</td>
+                                    <td>{{ $awayTeam->t_played > 0 ? round(($awayTeam->t_over_3_5_ft / $awayTeam->t_played) * 100, 2) : 0 }}%</td>
+                                    <td>{{ $awayTeam->h_played > 0 ? round(($awayTeam->h_over_3_5_ft / $awayTeam->h_played) * 100, 2) : 0 }}%</td>
+                                    <td>{{ $awayTeam->a_played > 0 ? round(($awayTeam->a_over_3_5_ft / $awayTeam->a_played) * 100, 2) : 0 }}%</td>
+                                </tr>
+                                <!-- Gol Gol (Entrambe le squadre segnano) -->
+                                <tr>
+                                    <td>Gol Gol</td>
+                                    <td>{{ $awayTeam->t_played > 0 ? round(($awayTeam->t_gg_ft / $awayTeam->t_played) * 100, 2) : 0 }}%</td>
+                                    <td>{{ $awayTeam->h_played > 0 ? round(($awayTeam->h_gg_ft / $awayTeam->h_played) * 100, 2) : 0 }}%</td>
+                                    <td>{{ $awayTeam->a_played > 0 ? round(($awayTeam->a_gg_ft / $awayTeam->a_played) * 100, 2) : 0 }}%</td>
+                                </tr>
+
+                                        <!-- Gol + Over 2.5 -->
+                                        <tr>
+                                            <td>Gol + Over 2.5</td>
+                                            <td>{{ $awayTeam->t_played > 0 ? round(($awayGolOver25Total / $awayTeam->t_played) * 100, 2) : 0 }}%</td>
+                                            <td>{{ $awayTeam->h_played > 0 ? round(($awayGolOver25Home / $awayTeam->h_played) * 100, 2) : 0 }}%</td>
+                                            <td>{{ $awayTeam->a_played > 0 ? round(($awayGolOver25Away / $awayTeam->a_played) * 100, 2) : 0 }}%</td>
+                                        </tr>
+
+                                <tr>
+                                    <td>Clean Sheets</td>
+                                    <td>{{ $awayTeam->t_played > 0 ? round(($awayCleanSheetsTotal / $awayTeam->t_played) * 100, 2) : 0 }}%</td>
+                                    <td>{{ $awayTeam->h_played > 0 ? round(($awayCleanSheetsHome / $awayTeam->h_played) * 100, 2) : 0 }}%</td>
+                                    <td>{{ $awayTeam->a_played > 0 ? round(($awayCleanSheetsAway / $awayTeam->a_played) * 100, 2) : 0 }}%</td>
+                                </tr>
+
+                                <tr>
+                                <td>Expected Gol</td>
+                                <td colspan="3">{{ $awayTeam->xg }}</td>
+                                </tr>
+
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+    </div>
 
 
  <!-- Fine lato desto -->

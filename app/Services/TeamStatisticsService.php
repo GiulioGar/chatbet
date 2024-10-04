@@ -14,7 +14,8 @@ class TeamStatisticsService
 {
     $teams = Team::where('league_id', '>', 0)->get();
 
-    foreach ($teams as $team) {
+    foreach ($teams as $team)
+    {
         $teamStats = [
             't_played' => 0, 't_wins' => 0, 't_draws' => 0, 't_losses' => 0,
             't_goals_for' => 0, 't_goals_against' => 0,
@@ -47,7 +48,15 @@ class TeamStatisticsService
             'forma' => 0, // Nuovo campo per la Forma
             'h_corners_conceded' => 0, // Aggiunto campo per i corner concessi in casa
             'a_corners_conceded' => 0, // Aggiunto campo per i corner concessi fuori casa
-            't_corners_conceded' => 0  // Aggiunto campo per i corner concessi totali
+            't_corners_conceded' => 0,  // Aggiunto campo per i corner concessi totali
+            'sog_conc_h' => 0, 'sog_conc_a' => 0,
+            'sof_conc_h' => 0, 'sof_conc_a' => 0,
+            'sib_conc_h' => 0, 'sib_conc_a' => 0,
+            'sob_conc_h' => 0, 'sob_conc_a' => 0,
+            'tsh_conc_h' => 0, 'tsh_conc_a' => 0,
+            'fouls_conc_h' => 0, 'fouls_conc_a' => 0,
+            'yc_conc_h' => 0, 'yc_conc_a' => 0,
+            'rc_conc_h' => 0, 'rc_conc_a' => 0,
         ];
 
 
@@ -72,7 +81,8 @@ class TeamStatisticsService
         $formaResults = [];
         $matchCounter = 0;
 
-        foreach ($matches as $match) {
+        foreach ($matches as $match)
+        {
             $isHome = $match->home_id == $team->team_id;
             $goalsFor = $isHome ? $match->home_score : $match->away_score;
             $goalsAgainst = $isHome ? $match->away_score : $match->home_score;
@@ -244,8 +254,31 @@ if (is_numeric($cornersConceded)) {
     }
 }
 
+            // Aggiorna le statistiche per le partite giocate in casa o fuori casa
+            if ($isHome) {
+                // Statistiche per le partite giocate in casa
+                $teamStats['sog_conc_h'] += is_numeric($match->sog_away) ? $match->sog_away : 0;
+                $teamStats['sof_conc_h'] += is_numeric($match->sof_away) ? $match->sof_away : 0;
+                $teamStats['sib_conc_h'] += is_numeric($match->sib_away) ? $match->sib_away : 0;
+                $teamStats['sob_conc_h'] += is_numeric($match->sob_away) ? $match->sob_away : 0;
+                $teamStats['tsh_conc_h'] += is_numeric($match->tsh_away) ? $match->tsh_away : 0;
+                $teamStats['fouls_conc_h'] += is_numeric($match->fouls_away) ? $match->fouls_away : 0;
+                $teamStats['yc_conc_h'] += is_numeric($match->yc_away) ? $match->yc_away : 0;
+                $teamStats['rc_conc_h'] += is_numeric($match->rc_away) ? $match->rc_away : 0;
+            } else {
+                // Statistiche per le partite giocate fuori casa
+                $teamStats['sog_conc_a'] += is_numeric($match->sog_home) ? $match->sog_home : 0;
+                $teamStats['sof_conc_a'] += is_numeric($match->sof_home) ? $match->sof_home : 0;
+                $teamStats['sib_conc_a'] += is_numeric($match->sib_home) ? $match->sib_home : 0;
+                $teamStats['sob_conc_a'] += is_numeric($match->sob_home) ? $match->sob_home : 0;
+                $teamStats['tsh_conc_a'] += is_numeric($match->tsh_home) ? $match->tsh_home : 0;
+                $teamStats['fouls_conc_a'] += is_numeric($match->fouls_home) ? $match->fouls_home : 0;
+                $teamStats['yc_conc_a'] += is_numeric($match->yc_home) ? $match->yc_home : 0;
+                $teamStats['rc_conc_a'] += is_numeric($match->rc_home) ? $match->rc_home : 0;
+            }
 
-        }
+
+     }
 
         // Calcolo della media del possesso palla
         if ($teamStats['h_played'] > 0) {
@@ -329,8 +362,10 @@ if ($totalWeight > 0) {
         } catch (\Exception $e) {
             Log::error("Errore durante l'aggiornamento delle statistiche per la squadra {$team->name}: {$e->getMessage()}");
         }
-    }
-            // Richiama la funzione per calcolare il momento di forma delle squadre
+}
+
+
+// Richiama la funzione per calcolare il momento di forma delle squadre
             $this->calcolaMomentoForma();
 }
 
