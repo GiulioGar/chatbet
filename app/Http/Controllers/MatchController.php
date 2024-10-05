@@ -240,33 +240,6 @@ $awayPointsAwayPercentage = $awayPointsGeneral > 0 ? round(($awayPointsAway / $a
          // Calcolo delle percentuali
         $overPercentages = $this->calculateOverPercentages($homeTeamData, $awayTeamData);
 
-         // Calcolo tiri totali e tiri in porta ponderati per il team di casa
-         $homeTiriTotaliPonderati = $this->calcolaTiriTotaliPonderati(
-            $homeTeamData->h_total_shots,
-            $homeTeamData->t_total_shots,
-            $homeTeamData->h_played,
-            $homeTeamData->t_played
-        );
-        $homeTiriInPortaPonderati = $this->calcolaTiriInPortaPonderati(
-            $homeTeamData->h_shots_on_goal,
-            $homeTeamData->t_shots_on_goal,
-            $homeTeamData->h_played,
-            $homeTeamData->t_played
-        );
-
-        // Calcolo tiri totali e tiri in porta ponderati per il team ospite
-        $awayTiriTotaliPonderati = $this->calcolaTiriTotaliPonderati(
-            $awayTeamData->a_total_shots,
-            $awayTeamData->t_total_shots,
-            $awayTeamData->a_played,
-            $awayTeamData->t_played
-        );
-        $awayTiriInPortaPonderati = $this->calcolaTiriInPortaPonderati(
-            $awayTeamData->a_shots_on_goal,
-            $awayTeamData->t_shots_on_goal,
-            $awayTeamData->a_played,
-            $awayTeamData->t_played
-        );
 
 
     // Passa i dati alla vista
@@ -307,10 +280,6 @@ $awayPointsAwayPercentage = $awayPointsGeneral > 0 ? round(($awayPointsAway / $a
         'awayGolOver25Away' => $awayGolOver25Away,
         'expectedCorners' => $expectedCorners,
         'overPercentages' => $overPercentages,
-        'homeTiriTotaliPonderati' => $homeTiriTotaliPonderati,
-        'homeTiriInPortaPonderati' => $homeTiriInPortaPonderati,
-        'awayTiriTotaliPonderati' => $awayTiriTotaliPonderati,
-        'awayTiriInPortaPonderati' => $awayTiriInPortaPonderati // Passa le percentuali alla vista
     ]);
 
 }
@@ -650,27 +619,7 @@ public function calculateOverPercentages($teamData, $opponentData)
     return $overPercentages;
 }
 
-    // Funzione per calcolare i tiri totali ponderati
-    public function calcolaTiriTotaliPonderati($specificShots, $totalShots, $specificGames, $totalGames, $weightSpecific = 0.6, $weightTotal = 0.4)
-    {
-        if ($specificGames > 0 && $totalGames > 0) {
-            $specificShotsPerGame = $specificShots / $specificGames;
-            $totalShotsPerGame = $totalShots / $totalGames;
-            return ($weightSpecific * $specificShotsPerGame) + ($weightTotal * $totalShotsPerGame);
-        }
-        return 0;
-    }
 
-    // Funzione per calcolare i tiri in porta ponderati
-    public function calcolaTiriInPortaPonderati($specificShotsOnGoal, $totalShotsOnGoal, $specificGames, $totalGames, $weightSpecific = 0.6, $weightTotal = 0.4)
-    {
-        if ($specificGames > 0 && $totalGames > 0) {
-            $specificShotsOnGoalPerGame = $specificShotsOnGoal / $specificGames;
-            $totalShotsOnGoalPerGame = $totalShotsOnGoal / $totalGames;
-            return ($weightSpecific * $specificShotsOnGoalPerGame) + ($weightTotal * $totalShotsOnGoalPerGame);
-        }
-        return 0;
-    }
 
 
 

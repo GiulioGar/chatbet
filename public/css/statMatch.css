@@ -25,7 +25,7 @@
 }
 
 .team-logo img {
-   width: 90%;
+   width: 50px;
 }
 .team-info {
     margin-left: 0.5rem;  /* Margine minimo per separare logo e informazioni */
@@ -389,3 +389,117 @@
 }
 
 
+.custom-goal-probability-box {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    background: linear-gradient(135deg, #f5f7fa, #c3cfe2); /* Gradiente delicato */
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.1); /* Ombra più morbida */
+    margin: 20px 0;
+    border: none; /* Rimuove i bordi rigidi */
+}
+
+.custom-team-info {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 15%;
+    text-align: center;
+    padding: 0;
+}
+
+.custom-team-logo img {
+    width: 60px;
+    height: auto;
+    margin-bottom: 10px;
+}
+
+.custom-team-stats {
+    margin-top: 10px;
+}
+
+.custom-team-stats p {
+    margin: 3px 0;
+    font-size: 14px;
+    color: #666; /* Colore testo più morbido */
+}
+
+.custom-team-name {
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: #333;
+}
+
+.custom-probability-info {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 45%;
+    padding: 0 10px;
+    text-align: center;
+}
+
+.custom-probability-label {
+    font-weight: 600;
+    font-size: 15px;
+    color: #444;
+    margin-bottom: 10px;
+}
+
+.custom-probability-bar {
+    width: 100%;
+    background-color: #f0f0f0;
+    border-radius: 50px;
+    height: 12px;
+    margin-bottom: 20px;
+    position: relative;
+}
+
+.custom-bar {
+    width: 100%;
+    height: 100%;
+    background-color: #e0e0e0;
+    border-radius: 50px;
+}
+
+.custom-fill-bar {
+    height: 100%;
+    background-color: #5cb85c;
+    border-radius: 50px;
+    position: absolute;
+}
+
+.custom-fill-bar.low {
+    background-color: #d9534f;
+}
+
+/* Bordo a sinistra per la sezione Lecce */
+.custom-team-away {
+    border-left: 2px solid #e6e6e6; /* Bordo sottile a sinistra */
+    padding-left: 20px; /* Spazio per evitare che il bordo tocchi il contenuto */
+}
+
+/* Per rendere il tutto più uniforme e fluido */
+.custom-goal-probability-box .custom-team-info:not(:last-child) {
+    border-right: none; /* Rimuove il bordo a destra per rendere più armonioso */
+}
+
+/* Aggiungere margine extra tra le due sezioni di probabilità */
+.custom-probability-label + .custom-probability-bar {
+    margin-bottom: 30px; /* Aumenta lo spazio tra le due sezioni */
+}
+
+.custom-goal-probability-header {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.custom-goal-probability-header h2 {
+    font-size: 24px;
+    font-weight: bold;
+    color: #333;
+    margin: 0;
+}
