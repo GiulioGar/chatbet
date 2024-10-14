@@ -508,6 +508,22 @@
     $AcornerTotMatch=$AcornerSing+$AcornerSub;
     $AcornerTotMatchH=$AcornerSing_h+$AcornerSub_h;
     $AcornerTotMatchA=$AcornerSing_a+$AcornerSub_a;
+
+    $homeCornersTotal = $homeTeam->t_corners;
+    $awayCornersTotal = $awayTeam->t_corners;
+    $homeShots = $homeTeam->t_total_shots;
+    $homeGamesPlayed = $homeTeam->t_played;
+    $awayShots = $awayTeam->t_total_shots;
+    $awayGamesPlayed = $awayTeam->t_played;
+
+// Calcolo dei corner dai tiri per la squadra di casa
+$homeCornersFromShots = ($homeShots > 0 && $homeGamesPlayed > 0) ?
+round( ($homeShots / $homeGamesPlayed) * ($homeCornersTotal / $homeShots),1) : 0;
+
+// Calcolo dei corner dai tiri per la squadra ospite
+$awayCornersFromShots = ($awayShots > 0 && $awayGamesPlayed > 0) ?
+round(($awayShots / $awayGamesPlayed) * ($awayCornersTotal / $awayShots),1) : 0;
+
     @endphp
 
 
@@ -616,9 +632,7 @@
                                         <!-- Over 1.5 -->
                                         <tr>
                                             <td>Rapporto Tiri/Corner</td>
-                                            <td></td>
-                                            <td></td>
-                                            <td></td>
+                                            <td colspan="3">{{$homeCornersFromShots}}</td>
                                         </tr>
 
                                         <!-- Over 3.5 -->
@@ -682,9 +696,7 @@
                                         <!-- Over 1.5 -->
                                         <tr>
                                             <td>Rapporto Tiri/Corner</td>
-                                            <td></td>
-                                            <td></td>
-                                            <td></td>
+                                            <td colspan="3">{{$awayCornersFromShots}}</td>
                                         </tr>
 
                                         <!-- Over 3.5 -->
@@ -1057,6 +1069,444 @@ $mediaTiriInPortaMatch = round($mediaTiriInPortaMatch, 1);
                                 </tbody>
 
                         </table>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+
+    {{-- Sezione Falli e Cartellini --}}
+    @php
+    // Pesi per la media ponderata
+    $w1 = 0.35;
+    $w2 = 0.65;
+
+    // Dati per la squadra di casa (Como)
+    // Assicurati che $homeTeam sia l'oggetto che contiene i dati del Como
+
+    // Calcoli per i cartellini ricevuti dalla squadra di casa
+    $homeCardsReceivedTotal = $homeTeam->t_yellow_cards + (2 * $homeTeam->t_red_cards);
+    $homeCardsReceivedHome = $homeTeam->h_yellow_cards + (2 * $homeTeam->h_red_cards);
+    $homeCardsReceivedTotalPerMatch = $homeTeam->t_played > 0 ? $homeCardsReceivedTotal / $homeTeam->t_played : 0;
+    $homeCardsReceivedHomePerMatch = $homeTeam->h_played > 0 ? $homeCardsReceivedHome / $homeTeam->h_played : 0;
+    $homeCardsReceivedAverage = ($homeCardsReceivedTotalPerMatch * $w1) + ($homeCardsReceivedHomePerMatch * $w2);
+
+    // Calcoli per i cartellini ricevuti dagli avversari della squadra di casa
+    $homeCardsConcededTotal = ($homeTeam->yc_conc_h + $homeTeam->yc_conc_a) + (2 * ($homeTeam->rc_conc_h + $homeTeam->rc_conc_a));
+    $homeCardsConcededHome = $homeTeam->yc_conc_h + (2 * $homeTeam->rc_conc_h);
+    $homeCardsConcededTotalPerMatch = $homeTeam->t_played > 0 ? $homeCardsConcededTotal / $homeTeam->t_played : 0;
+    $homeCardsConcededHomePerMatch = $homeTeam->h_played > 0 ? $homeCardsConcededHome / $homeTeam->h_played : 0;
+    $homeCardsConcededAverage = ($homeCardsConcededTotalPerMatch * $w1) + ($homeCardsConcededHomePerMatch * $w2);
+
+    // Media totale cartellini per partita per la squadra di casa
+    $homeTotalCardsPerMatch = $homeCardsReceivedAverage + $homeCardsConcededAverage;
+
+    // Calcoli per i falli commessi dalla squadra di casa
+    $homeFoulsCommittedTotalPerMatch = $homeTeam->t_played > 0 ? $homeTeam->t_fouls / $homeTeam->t_played : 0;
+    $homeFoulsCommittedHomePerMatch = $homeTeam->h_played > 0 ? $homeTeam->h_fouls / $homeTeam->h_played : 0;
+    $homeFoulsCommittedAverage = ($homeFoulsCommittedTotalPerMatch * $w1) + ($homeFoulsCommittedHomePerMatch * $w2);
+
+    // Calcoli per i falli commessi dagli avversari della squadra di casa
+    $homeFoulsConcededTotal = $homeTeam->fouls_conc_h + $homeTeam->fouls_conc_a;
+    $homeFoulsConcededTotalPerMatch = $homeTeam->t_played > 0 ? $homeFoulsConcededTotal / $homeTeam->t_played : 0;
+    $homeFoulsConcededHomePerMatch = $homeTeam->h_played > 0 ? $homeTeam->fouls_conc_h / $homeTeam->h_played : 0;
+    $homeFoulsConcededAverage = ($homeFoulsConcededTotalPerMatch * $w1) + ($homeFoulsConcededHomePerMatch * $w2);
+
+    // Media totale falli per partita per la squadra di casa
+    $homeTotalFoulsPerMatch = $homeFoulsCommittedAverage + $homeFoulsConcededAverage;
+
+    // Arrotondamento per la squadra di casa
+    $homeTotalCardsPerMatch = round($homeTotalCardsPerMatch, 2);
+    $homeTotalFoulsPerMatch = round($homeTotalFoulsPerMatch, 2);
+
+    // Calcoli per la squadra ospite (Parma)
+    // Assicurati che $awayTeam sia l'oggetto che contiene i dati del Parma
+
+    // Calcoli per i cartellini ricevuti dalla squadra ospite
+    $awayCardsReceivedTotal = $awayTeam->t_yellow_cards + (2 * $awayTeam->t_red_cards);
+    $awayCardsReceivedAway = $awayTeam->a_yellow_cards + (2 * $awayTeam->a_red_cards);
+    $awayCardsReceivedTotalPerMatch = $awayTeam->t_played > 0 ? $awayCardsReceivedTotal / $awayTeam->t_played : 0;
+    $awayCardsReceivedAwayPerMatch = $awayTeam->a_played > 0 ? $awayCardsReceivedAway / $awayTeam->a_played : 0;
+    $awayCardsReceivedAverage = ($awayCardsReceivedTotalPerMatch * $w1) + ($awayCardsReceivedAwayPerMatch * $w2);
+
+    // Calcoli per i cartellini ricevuti dagli avversari della squadra ospite
+    $awayCardsConcededTotal = ($awayTeam->yc_conc_h + $awayTeam->yc_conc_a) + (2 * ($awayTeam->rc_conc_h + $awayTeam->rc_conc_a));
+    $awayCardsConcededAway = $awayTeam->yc_conc_a + (2 * $awayTeam->rc_conc_a);
+    $awayCardsConcededTotalPerMatch = $awayTeam->t_played > 0 ? $awayCardsConcededTotal / $awayTeam->t_played : 0;
+    $awayCardsConcededAwayPerMatch = $awayTeam->a_played > 0 ? $awayCardsConcededAway / $awayTeam->a_played : 0;
+    $awayCardsConcededAverage = ($awayCardsConcededTotalPerMatch * $w1) + ($awayCardsConcededAwayPerMatch * $w2);
+
+    // Media totale cartellini per partita per la squadra ospite
+    $awayTotalCardsPerMatch = $awayCardsReceivedAverage + $awayCardsConcededAverage;
+
+    // Calcoli per i falli commessi dalla squadra ospite
+    $awayFoulsCommittedTotalPerMatch = $awayTeam->t_played > 0 ? $awayTeam->t_fouls / $awayTeam->t_played : 0;
+    $awayFoulsCommittedAwayPerMatch = $awayTeam->a_played > 0 ? $awayTeam->a_fouls / $awayTeam->a_played : 0;
+    $awayFoulsCommittedAverage = ($awayFoulsCommittedTotalPerMatch * $w1) + ($awayFoulsCommittedAwayPerMatch * $w2);
+
+    // Calcoli per i falli commessi dagli avversari della squadra ospite
+    $awayFoulsConcededTotal = $awayTeam->fouls_conc_h + $awayTeam->fouls_conc_a;
+    $awayFoulsConcededTotalPerMatch = $awayTeam->t_played > 0 ? $awayFoulsConcededTotal / $awayTeam->t_played : 0;
+    $awayFoulsConcededAwayPerMatch = $awayTeam->a_played > 0 ? $awayTeam->fouls_conc_a / $awayTeam->a_played : 0;
+    $awayFoulsConcededAverage = ($awayFoulsConcededTotalPerMatch * $w1) + ($awayFoulsConcededAwayPerMatch * $w2);
+
+    // Media totale falli per partita per la squadra ospite
+    $awayTotalFoulsPerMatch = $awayFoulsCommittedAverage + $awayFoulsConcededAverage;
+
+    // Arrotondamento per la squadra ospite
+    $awayTotalCardsPerMatch = round($awayTotalCardsPerMatch, 2);
+    $awayTotalFoulsPerMatch = round($awayTotalFoulsPerMatch, 2);
+
+    // Totali attesi per la partita
+    $totalCardsMatch = round(($homeTotalCardsPerMatch + $awayTotalCardsPerMatch) / 2, 2);
+    $totalFoulsMatch = round(($homeTotalFoulsPerMatch + $awayTotalFoulsPerMatch) / 2, 2);
+
+/* calcoli per tabella */
+
+// Partite giocate
+$homeTotalMatches = $homeTeam->t_played;
+$homeHomeMatches = $homeTeam->h_played;
+$homeAwayMatches = $homeTeam->a_played;
+
+// Medie per partita - Statistiche della squadra
+$homeAverageFoulsTotal = $homeTotalMatches > 0 ? $homeTeam->t_fouls / $homeTotalMatches : 0;
+$homeAverageFoulsHome = $homeHomeMatches > 0 ? $homeTeam->h_fouls / $homeHomeMatches : 0;
+$homeAverageFoulsAway = $homeAwayMatches > 0 ? $homeTeam->a_fouls / $homeAwayMatches : 0;
+
+$homeAverageYellowCardsTotal = $homeTotalMatches > 0 ? $homeTeam->t_yellow_cards / $homeTotalMatches : 0;
+$homeAverageYellowCardsHome = $homeHomeMatches > 0 ? $homeTeam->h_yellow_cards / $homeHomeMatches : 0;
+$homeAverageYellowCardsAway = $homeAwayMatches > 0 ? $homeTeam->a_yellow_cards / $homeAwayMatches : 0;
+
+$homeAverageRedCardsTotal = $homeTotalMatches > 0 ? $homeTeam->t_red_cards / $homeTotalMatches : 0;
+$homeAverageRedCardsHome = $homeHomeMatches > 0 ? $homeTeam->h_red_cards / $homeHomeMatches : 0;
+$homeAverageRedCardsAway = $homeAwayMatches > 0 ? $homeTeam->a_red_cards / $homeAwayMatches : 0;
+
+// Medie per partita - Statistiche combinate (squadra + avversari)
+$homeTotalFoulsCombined = $homeTeam->t_fouls + $homeTeam->fouls_conc_h + $homeTeam->fouls_conc_a;
+$homeFoulsCombinedHome = $homeTeam->h_fouls + $homeTeam->fouls_conc_h;
+$homeFoulsCombinedAway = $homeTeam->a_fouls + $homeTeam->fouls_conc_a;
+
+$homeAverageFoulsCombinedTotal = $homeTotalMatches > 0 ? $homeTotalFoulsCombined / $homeTotalMatches : 0;
+$homeAverageFoulsCombinedHome = $homeHomeMatches > 0 ? $homeFoulsCombinedHome / $homeHomeMatches : 0;
+$homeAverageFoulsCombinedAway = $homeAwayMatches > 0 ? $homeFoulsCombinedAway / $homeAwayMatches : 0;
+
+$homeTotalYellowCardsCombined = $homeTeam->t_yellow_cards + $homeTeam->yc_conc_h + $homeTeam->yc_conc_a;
+$homeYellowCardsCombinedHome = $homeTeam->h_yellow_cards + $homeTeam->yc_conc_h;
+$homeYellowCardsCombinedAway = $homeTeam->a_yellow_cards + $homeTeam->yc_conc_a;
+
+$homeAverageYellowCardsCombinedTotal = $homeTotalMatches > 0 ? $homeTotalYellowCardsCombined / $homeTotalMatches : 0;
+$homeAverageYellowCardsCombinedHome = $homeHomeMatches > 0 ? $homeYellowCardsCombinedHome / $homeHomeMatches : 0;
+$homeAverageYellowCardsCombinedAway = $homeAwayMatches > 0 ? $homeYellowCardsCombinedAway / $homeAwayMatches : 0;
+
+$homeTotalRedCardsCombined = $homeTeam->t_red_cards + $homeTeam->rc_conc_h + $homeTeam->rc_conc_a;
+$homeRedCardsCombinedHome = $homeTeam->h_red_cards + $homeTeam->rc_conc_h;
+$homeRedCardsCombinedAway = $homeTeam->a_red_cards + $homeTeam->rc_conc_a;
+
+$homeAverageRedCardsCombinedTotal = $homeTotalMatches > 0 ? $homeTotalRedCardsCombined / $homeTotalMatches : 0;
+$homeAverageRedCardsCombinedHome = $homeHomeMatches > 0 ? $homeRedCardsCombinedHome / $homeHomeMatches : 0;
+$homeAverageRedCardsCombinedAway = $homeAwayMatches > 0 ? $homeRedCardsCombinedAway / $homeAwayMatches : 0;
+
+// Arrotondamenti a un decimale
+$homeAverageFoulsTotal = round($homeAverageFoulsTotal, 1);
+$homeAverageFoulsHome = round($homeAverageFoulsHome, 1);
+$homeAverageFoulsAway = round($homeAverageFoulsAway, 1);
+
+$homeAverageYellowCardsTotal = round($homeAverageYellowCardsTotal, 1);
+$homeAverageYellowCardsHome = round($homeAverageYellowCardsHome, 1);
+$homeAverageYellowCardsAway = round($homeAverageYellowCardsAway, 1);
+
+$homeAverageRedCardsTotal = round($homeAverageRedCardsTotal, 1);
+$homeAverageRedCardsHome = round($homeAverageRedCardsHome, 1);
+$homeAverageRedCardsAway = round($homeAverageRedCardsAway, 1);
+
+$homeAverageFoulsCombinedTotal = round($homeAverageFoulsCombinedTotal, 1);
+$homeAverageFoulsCombinedHome = round($homeAverageFoulsCombinedHome, 1);
+$homeAverageFoulsCombinedAway = round($homeAverageFoulsCombinedAway, 1);
+
+$homeAverageYellowCardsCombinedTotal = round($homeAverageYellowCardsCombinedTotal, 1);
+$homeAverageYellowCardsCombinedHome = round($homeAverageYellowCardsCombinedHome, 1);
+$homeAverageYellowCardsCombinedAway = round($homeAverageYellowCardsCombinedAway, 1);
+
+$homeAverageRedCardsCombinedTotal = round($homeAverageRedCardsCombinedTotal, 1);
+$homeAverageRedCardsCombinedHome = round($homeAverageRedCardsCombinedHome, 1);
+$homeAverageRedCardsCombinedAway = round($homeAverageRedCardsCombinedAway, 1);
+
+// Partite giocate
+$awayTotalMatches = $awayTeam->t_played;
+$awayHomeMatches = $awayTeam->h_played;
+$awayAwayMatches = $awayTeam->a_played;
+
+// Medie per partita - Statistiche della squadra
+$awayAverageFoulsTotal = $awayTotalMatches > 0 ? $awayTeam->t_fouls / $awayTotalMatches : 0;
+$awayAverageFoulsHome = $awayHomeMatches > 0 ? $awayTeam->h_fouls / $awayHomeMatches : 0;
+$awayAverageFoulsAway = $awayAwayMatches > 0 ? $awayTeam->a_fouls / $awayAwayMatches : 0;
+
+$awayAverageYellowCardsTotal = $awayTotalMatches > 0 ? $awayTeam->t_yellow_cards / $awayTotalMatches : 0;
+$awayAverageYellowCardsHome = $awayHomeMatches > 0 ? $awayTeam->h_yellow_cards / $awayHomeMatches : 0;
+$awayAverageYellowCardsAway = $awayAwayMatches > 0 ? $awayTeam->a_yellow_cards / $awayAwayMatches : 0;
+
+$awayAverageRedCardsTotal = $awayTotalMatches > 0 ? $awayTeam->t_red_cards / $awayTotalMatches : 0;
+$awayAverageRedCardsHome = $awayHomeMatches > 0 ? $awayTeam->h_red_cards / $awayHomeMatches : 0;
+$awayAverageRedCardsAway = $awayAwayMatches > 0 ? $awayTeam->a_red_cards / $awayAwayMatches : 0;
+
+// Medie per partita - Statistiche combinate (squadra + avversari)
+$awayTotalFoulsCombined = $awayTeam->t_fouls + $awayTeam->fouls_conc_h + $awayTeam->fouls_conc_a;
+$awayFoulsCombinedHome = $awayTeam->h_fouls + $awayTeam->fouls_conc_h;
+$awayFoulsCombinedAway = $awayTeam->a_fouls + $awayTeam->fouls_conc_a;
+
+$awayAverageFoulsCombinedTotal = $awayTotalMatches > 0 ? $awayTotalFoulsCombined / $awayTotalMatches : 0;
+$awayAverageFoulsCombinedHome = $awayHomeMatches > 0 ? $awayFoulsCombinedHome / $awayHomeMatches : 0;
+$awayAverageFoulsCombinedAway = $awayAwayMatches > 0 ? $awayFoulsCombinedAway / $awayAwayMatches : 0;
+
+$awayTotalYellowCardsCombined = $awayTeam->t_yellow_cards + $awayTeam->yc_conc_h + $awayTeam->yc_conc_a;
+$awayYellowCardsCombinedHome = $awayTeam->h_yellow_cards + $awayTeam->yc_conc_h;
+$awayYellowCardsCombinedAway = $awayTeam->a_yellow_cards + $awayTeam->yc_conc_a;
+
+$awayAverageYellowCardsCombinedTotal = $awayTotalMatches > 0 ? $awayTotalYellowCardsCombined / $awayTotalMatches : 0;
+$awayAverageYellowCardsCombinedHome = $awayHomeMatches > 0 ? $awayYellowCardsCombinedHome / $awayHomeMatches : 0;
+$awayAverageYellowCardsCombinedAway = $awayAwayMatches > 0 ? $awayYellowCardsCombinedAway / $awayAwayMatches : 0;
+
+$awayTotalRedCardsCombined = $awayTeam->t_red_cards + $awayTeam->rc_conc_h + $awayTeam->rc_conc_a;
+$awayRedCardsCombinedHome = $awayTeam->h_red_cards + $awayTeam->rc_conc_h;
+$awayRedCardsCombinedAway = $awayTeam->a_red_cards + $awayTeam->rc_conc_a;
+
+$awayAverageRedCardsCombinedTotal = $awayTotalMatches > 0 ? $awayTotalRedCardsCombined / $awayTotalMatches : 0;
+$awayAverageRedCardsCombinedHome = $awayHomeMatches > 0 ? $awayRedCardsCombinedHome / $awayHomeMatches : 0;
+$awayAverageRedCardsCombinedAway = $awayAwayMatches > 0 ? $awayRedCardsCombinedAway / $awayAwayMatches : 0;
+
+// Arrotondamenti a un decimale
+$awayAverageFoulsTotal = round($awayAverageFoulsTotal, 1);
+$awayAverageFoulsHome = round($awayAverageFoulsHome, 1);
+$awayAverageFoulsAway = round($awayAverageFoulsAway, 1);
+
+$awayAverageYellowCardsTotal = round($awayAverageYellowCardsTotal, 1);
+$awayAverageYellowCardsHome = round($awayAverageYellowCardsHome, 1);
+$awayAverageYellowCardsAway = round($awayAverageYellowCardsAway, 1);
+
+$awayAverageRedCardsTotal = round($awayAverageRedCardsTotal, 1);
+$awayAverageRedCardsHome = round($awayAverageRedCardsHome, 1);
+$awayAverageRedCardsAway = round($awayAverageRedCardsAway, 1);
+
+$awayAverageFoulsCombinedTotal = round($awayAverageFoulsCombinedTotal, 1);
+$awayAverageFoulsCombinedHome = round($awayAverageFoulsCombinedHome, 1);
+$awayAverageFoulsCombinedAway = round($awayAverageFoulsCombinedAway, 1);
+
+$awayAverageYellowCardsCombinedTotal = round($awayAverageYellowCardsCombinedTotal, 1);
+$awayAverageYellowCardsCombinedHome = round($awayAverageYellowCardsCombinedHome, 1);
+$awayAverageYellowCardsCombinedAway = round($awayAverageYellowCardsCombinedAway, 1);
+
+$awayAverageRedCardsCombinedTotal = round($awayAverageRedCardsCombinedTotal, 1);
+$awayAverageRedCardsCombinedHome = round($awayAverageRedCardsCombinedHome, 1);
+$awayAverageRedCardsCombinedAway = round($awayAverageRedCardsCombinedAway, 1);
+
+
+    @endphp
+
+
+
+
+
+    <div class="row">
+        <div class="col-md-12">
+            <div class="custom-card-light p-3">
+                <div class="custom-header-light d-flex align-items-center justify-content-between mb-3">
+                    <div class="d-flex align-items-center">
+                        <img src="{{ asset('images/foul.png') }}" alt="Falli icon" class="mr-3" style="width: 70px;">
+                        <div>
+                            <h4 class="mb-1">Cartellini / Falli</h4>
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <div class="custom-goal-probability-header">
+                    <h2>Previsione</h2>
+                </div>
+
+                <div class="custom-goal-probability-box">
+                    <!-- Squadra di Casa -->
+                    <div class="custom-team-info">
+                        <div class="custom-team-logo">
+                            <img src="https://media.api-sports.io/football/teams/{{ $homeTeam->team_id }}.png" alt="{{ $homeTeam->name }}">
+                        </div>
+                        <div class="custom-team-stats">
+                            <span class="custom-team-name">{{ $homeTeam->name }}</span>
+                            <p>Cartellini: <b>{{ $homeTotalCardsPerMatch }}</b></p>
+                            <p>Falli: <b>{{ $homeTotalFoulsPerMatch }}</b></p>
+                        </div>
+                    </div>
+
+                    <!-- Informazioni sulla Partita -->
+                    <div class="custom-probability-info">
+                        <span class="custom-probability-label">Linea partita <b>Cartellini</b>: {{ $totalCardsMatch }}</span>
+                        <div class="custom-probability-bar">
+                            <div class="custom-bar">
+                                <div class="custom-fill-bar"></div>
+                            </div>
+                        </div>
+                        <span class="custom-probability-label">Linea partita <b>Falli</b>: {{ $totalFoulsMatch }}</span>
+                        <div class="custom-probability-bar">
+                            <div class="custom-bar">
+                                <div class="custom-fill-bar"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Squadra Ospite  -->
+                    <div class="custom-team-info">
+                        <div class="custom-team-logo">
+                            <img src="https://media.api-sports.io/football/teams/{{ $awayTeam->team_id }}.png" alt="{{ $awayTeam->name }}">
+                        </div>
+                        <div class="custom-team-stats">
+                            <span class="custom-team-name">{{ $awayTeam->name }}</span>
+                            <p>Cartellini: <b>{{ $awayTotalCardsPerMatch }}</b></p>
+                            <p>Falli: <b>{{ $awayTotalFoulsPerMatch }}</b></p>
+                        </div>
+                    </div>
+                </div>
+
+
+                <div class="row-team">
+                    <!-- Tabella Home Team -->
+                    <div class="team-table">
+                        <div class="team-header">
+                            <img src="https://media.api-sports.io/football/teams/{{ $homeTeam->team_id }}.png" alt="{{ $homeTeam->name }}" class="team-logo">
+                            <div>
+                                <h4>{{ $homeTeam->name }}</h4>
+                                <p style="color:#f0eeee">Difesa:{{ $homeTeam->fascia }}</p>
+                            </div>
+                        </div>
+
+                        <table class="team-stats">
+                            <thead>
+                                <tr>
+                                    <th></th>
+                                    <th>Totale</th>
+                                    <th>Casa</th>
+                                    <th>Trasferta</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Medie per Partita - Statistiche della Squadra -->
+                                <tr>
+                                    <td>Falli </td>
+                                    <td>{{ $homeAverageFoulsTotal }}</td>
+                                    <td>{{ $homeAverageFoulsHome }}</td>
+                                    <td>{{ $homeAverageFoulsAway }}</td>
+                                </tr>
+                                <tr>
+                                    <td>Cartellini gialli </td>
+                                    <td>{{ $homeAverageYellowCardsTotal }}</td>
+                                    <td>{{ $homeAverageYellowCardsHome }}</td>
+                                    <td>{{ $homeAverageYellowCardsAway }}</td>
+                                </tr>
+                                <tr>
+                                    <td>Cartellini rossi </td>
+                                    <td>{{ $homeAverageRedCardsTotal }}</td>
+                                    <td>{{ $homeAverageRedCardsHome }}</td>
+                                    <td>{{ $homeAverageRedCardsAway }}</td>
+                                </tr>
+                                <!-- Intestazione Per Partita (Statistiche Combinate) -->
+                                <tr>
+                                    <td style="background-color: #2b8dbba8; color:#fff" colspan="4"><b>Per Partita (Squadra + Avversari)</b></td>
+                                </tr>
+                                <!-- Medie per Partita - Statistiche Combinate -->
+                                <tr>
+                                    <td>Falli totali </td>
+                                    <td>{{ $homeAverageFoulsCombinedTotal }}</td>
+                                    <td>{{ $homeAverageFoulsCombinedHome }}</td>
+                                    <td>{{ $homeAverageFoulsCombinedAway }}</td>
+                                </tr>
+                                <tr>
+                                    <td>Cartellini gialli totali </td>
+                                    <td>{{ $homeAverageYellowCardsCombinedTotal }}</td>
+                                    <td>{{ $homeAverageYellowCardsCombinedHome }}</td>
+                                    <td>{{ $homeAverageYellowCardsCombinedAway }}</td>
+                                </tr>
+                                <tr>
+                                    <td>Cartellini rossi totali </td>
+                                    <td>{{ $homeAverageRedCardsCombinedTotal }}</td>
+                                    <td>{{ $homeAverageRedCardsCombinedHome }}</td>
+                                    <td>{{ $homeAverageRedCardsCombinedAway }}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+
+
+
+
+                    </div>
+
+                    <!-- Tabella Away Team -->
+                    <div class="team-table">
+                        <div class="team-header">
+                            <img src="https://media.api-sports.io/football/teams/{{ $awayTeam->team_id }}.png" alt="{{ $awayTeam->name }}" class="team-logo">
+                            <div>
+                                <h4>{{ $awayTeam->name }}</h4>
+                                <p style="color:#f0eeee">Forma attuale:{{ $awayTeam->fascia }}</p>
+                            </div>
+                        </div>
+                        <table class="team-stats">
+                            <thead>
+                                <tr>
+                                    <th></th>
+                                    <th>Totale</th>
+                                    <th>Casa</th>
+                                    <th>Trasferta</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Medie per Partita - Statistiche della Squadra -->
+                                <tr>
+                                    <td>Falli </td>
+                                    <td>{{ $awayAverageFoulsTotal }}</td>
+                                    <td>{{ $awayAverageFoulsHome }}</td>
+                                    <td>{{ $awayAverageFoulsAway }}</td>
+                                </tr>
+                                <tr>
+                                    <td>Cartellini gialli </td>
+                                    <td>{{ $awayAverageYellowCardsTotal }}</td>
+                                    <td>{{ $awayAverageYellowCardsHome }}</td>
+                                    <td>{{ $awayAverageYellowCardsAway }}</td>
+                                </tr>
+                                <tr>
+                                    <td>Cartellini rossi</td>
+                                    <td>{{ $awayAverageRedCardsTotal }}</td>
+                                    <td>{{ $awayAverageRedCardsHome }}</td>
+                                    <td>{{ $awayAverageRedCardsAway }}</td>
+                                </tr>
+                                <!-- Intestazione Per Partita (Statistiche Combinate) -->
+                                <tr>
+                                    <td style="background-color: #2b8dbba8; color:#fff" colspan="4"><b>Per Partita</b></td>
+                                </tr>
+                                <!-- Medie per Partita - Statistiche Combinate -->
+                                <tr>
+                                    <td>Falli totali</td>
+                                    <td>{{ $awayAverageFoulsCombinedTotal }}</td>
+                                    <td>{{ $awayAverageFoulsCombinedHome }}</td>
+                                    <td>{{ $awayAverageFoulsCombinedAway }}</td>
+                                </tr>
+                                <tr>
+                                    <td>Cartellini gialli totali</td>
+                                    <td>{{ $awayAverageYellowCardsCombinedTotal }}</td>
+                                    <td>{{ $awayAverageYellowCardsCombinedHome }}</td>
+                                    <td>{{ $awayAverageYellowCardsCombinedAway }}</td>
+                                </tr>
+                                <tr>
+                                    <td>Cartellini rossi totali </td>
+                                    <td>{{ $awayAverageRedCardsCombinedTotal }}</td>
+                                    <td>{{ $awayAverageRedCardsCombinedHome }}</td>
+                                    <td>{{ $awayAverageRedCardsCombinedAway }}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+
+
                     </div>
                 </div>
 
