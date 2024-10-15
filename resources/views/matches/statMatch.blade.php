@@ -1516,64 +1516,197 @@ $awayAverageRedCardsCombinedAway = round($awayAverageRedCardsCombinedAway, 1);
     </div>
 
 
- <!-- Fine lato desto -->
+ <!-- Fine lato sinistro -->
 </div>
 
-        <div class="col-md-4">
-            <!-- Sezione laterale per statistiche aggiuntive o classifiche -->
-            <div class="card mb-4">
-                <div class="card-header"><span style="text-transform: uppercase">{{ $leagueName }}</span> - Classifica</div>
-                <div class="card-body">
-                    <!-- Contenuti della classifica -->
-                    <p>
-
-                        <table style="font-size: 11px" class="table table-striped table-custom table-classifica">
-                            <thead>
-                                <tr>
-                                    <th>#</th>
-                                    <th>Squadra</th>
-                                    <th>Partite</th>
-                                    <th>GF</th>
-                                    <th>GS</th>
-                                    <th>PUN</th>
-                                </tr>
-                            </thead>
+ <!--lato destro -->
+ <div class="col-md-4">
+    <!-- Prima Card: Sezione per statistiche aggiuntive -->
+    <div class="card card-custom">
+        <div class="card-header-custom">Ultime 7 gare</div>
+        <div class="card-body">
+            <!-- Sezione Tab personalizzata -->
+            <div id="customTabsSection">
+                <ul class="nav nav-tabs" id="customTabs" role="tablist">
+                    <li class="nav-item">
+                        <a class="nav-link active" id="latestMatches-tab" data-toggle="tab" href="#latestMatches" role="tab" aria-controls="latestMatches" aria-selected="true">Partite</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" id="overUnder-tab" data-toggle="tab" href="#overUnder" role="tab" aria-controls="overUnder" aria-selected="false">Over</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" id="goalGoal-tab" data-toggle="tab" href="#goalGoal" role="tab" aria-controls="goalGoal" aria-selected="false">Gol Gol</a>
+                    </li>
+                </ul>
+                <div class="tab-content" id="customTabsContent">
+                    <div class="tab-pane fade show active" id="latestMatches" role="tabpanel" aria-labelledby="latestMatches-tab">
+                        <!-- Contenuto Ultime gare -->
+                        <table class="compact-matches-table">
                             <tbody>
-                                @foreach($teams as $index => $team)
-                                @php
-                                $positionClass = '';
-                                if ($loop->iteration == 1) {
-                                    $positionClass = 'position-gold';
-                                } elseif ($loop->iteration >= 2 && $loop->iteration <= 4) {
-                                    $positionClass = 'position-silver';
-                                } elseif ($loop->iteration >= 5 && $loop->iteration <= 6) {
-                                    $positionClass = 'position-bronze';
-                                } elseif ($loop->iteration >= 18 && $loop->iteration <= 20) {
-                                    $positionClass = 'position-red';
-                                }
-                            // Definisce una classe condizionale per cambiare lo sfondo
-                                $highlightClass = '';
-                                if ($team->name === $homeTeam->name || $team->name === $awayTeam->name) {
-                                    $highlightClass = 'highlight-team'; // Aggiunge la classe se il nome della squadra corrisponde
-                                }
-                            @endphp
-                                    <tr>
-                                        <td class="{{ $positionClass }}">{{ $loop->iteration }}</td>
-                                        <td class="{{ $highlightClass }}">{{ $team->name }}</td>
-                                        <td class="{{ $highlightClass }}">{{ $team->t_played }}</td>
-                                        <td class="{{ $highlightClass }}">{{ $team->t_goals_for }}</td>
-                                        <td class="{{ $highlightClass }}">{{ $team->t_goals_against }}</td>
-                                        <td class="{{ $highlightClass }}"><b>{{ $team->points }}</b></td>
-                                    </tr>
-                                @endforeach
+                                <!-- Intestazione per la squadra di casa -->
+                                <tr class="separator-row">
+                                    <td colspan="4">Calcio Como</td>
+                                </tr>
+
+                                <!-- Partite della squadra di casa -->
+                                <tr>
+                                    <td><span class="team">Napoli</span></td>
+                                    <td>
+                                        <span class="date">04/10/24</span>
+                                        <span class="result result-loss">3 : 1</span>
+                                    </td>
+                                    <td><span class="team">Calcio Como</span></td>
+                                </tr>
+                                <tr>
+                                    <td><span class="team">Calcio Como</span></td>
+                                    <td>
+                                        <span class="date">29/09/24</span>
+                                        <span class="result result-win">3 : 2</span>
+                                    </td>
+                                    <td><span class="team">Hellas Verona</span></td>
+                                </tr>
+                                <tr>
+                                    <td><span class="team">Atalanta</span></td>
+                                    <td>
+                                        <span class="date">24/09/24</span>
+                                        <span class="result result-loss">2 : 3</span>
+                                    </td>
+                                    <td><span class="team">Calcio Como</span></td>
+                                </tr>
+                                <tr>
+                                    <td><span class="team">Calcio Como</span></td>
+                                    <td>
+                                        <span class="date">14/09/24</span>
+                                        <span class="result result-draw">2 : 2</span>
+                                    </td>
+                                    <td><span class="team">Bologna</span></td>
+                                </tr>
+                                <tr>
+                                    <td><span class="team">Udinese</span></td>
+                                    <td>
+                                        <span class="date">01/09/24</span>
+                                        <span class="result result-win">1 : 0</span>
+                                    </td>
+                                    <td><span class="team">Calcio Como</span></td>
+                                </tr>
+
+                                <!-- Separatore per squadra ospite -->
+                                <tr class="separator-row">
+                                    <td colspan="4">AC Parma</td>
+                                </tr>
+
+                                <!-- Partite della squadra ospite -->
+                                <tr>
+                                    <td><span class="team">Bologna</span></td>
+                                    <td>
+                                        <span class="date">06/10/24</span>
+                                        <span class="result result-draw">0 : 0</span>
+                                    </td>
+                                    <td><span class="team">AC Parma</span></td>
+                                </tr>
+                                <tr>
+                                    <td><span class="team">AC Parma</span></td>
+                                    <td>
+                                        <span class="date">30/09/24</span>
+                                        <span class="result result-loss">0 : 1</span>
+                                    </td>
+                                    <td><span class="team">Cagliari Calcio</span></td>
+                                </tr>
+                                <tr>
+                                    <td><span class="team">Lecce</span></td>
+                                    <td>
+                                        <span class="date">27/09/24</span>
+                                        <span class="result result-draw">2 : 2</span>
+                                    </td>
+                                    <td><span class="team">AC Parma</span></td>
+                                </tr>
+                                <tr>
+                                    <td><span class="team">AC Parma</span></td>
+                                    <td>
+                                        <span class="date">16/09/24</span>
+                                        <span class="result result-loss">2 : 3</span>
+                                    </td>
+                                    <td><span class="team">Udinese</span></td>
+                                </tr>
+                                <tr>
+                                    <td><span class="team">Napoli</span></td>
+                                    <td>
+                                        <span class="date">31/08/24</span>
+                                        <span class="result result-loss">2 : 1</span>
+                                    </td>
+                                    <td><span class="team">AC Parma</span></td>
+                                </tr>
                             </tbody>
                         </table>
 
-
-                    </p>
+                    </div>
+                    <div class="tab-pane fade" id="overUnder" role="tabpanel" aria-labelledby="overUnder-tab">
+                        <!-- Contenuto Over e Under -->
+                        <p>Inserisci qui le statistiche di Over e Under.</p>
+                    </div>
+                    <div class="tab-pane fade" id="goalGoal" role="tabpanel" aria-labelledby="goalGoal-tab">
+                        <!-- Contenuto Gol Gol -->
+                        <p>Inserisci qui le statistiche di Gol Gol.</p>
+                    </div>
                 </div>
             </div>
         </div>
+    </div>
+
+    <!-- Seconda Card: Sezione Classifica -->
+    <div class="card card-custom">
+        <div class="card-header-custom"><span style="text-transform: uppercase">{{ $leagueName }}</span> - Classifica</div>
+        <div class="card-body">
+            <!-- Contenuti della classifica -->
+            <p id="classifica">
+                <table style="font-size: 11px" class="table table-striped table-custom table-classifica">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Squadra</th>
+                            <th>Partite</th>
+                            <th>GF</th>
+                            <th>GS</th>
+                            <th>PUN</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach($teams as $index => $team)
+                        @php
+                        $positionClass = '';
+                        if ($loop->iteration == 1) {
+                            $positionClass = 'position-gold';
+                        } elseif ($loop->iteration >= 2 && $loop->iteration <= 4) {
+                            $positionClass = 'position-silver';
+                        } elseif ($loop->iteration >= 5 && $loop->iteration <= 6) {
+                            $positionClass = 'position-bronze';
+                        } elseif ($loop->iteration >= 18 && $loop->iteration <= 20) {
+                            $positionClass = 'position-red';
+                        }
+                        $highlightClass = '';
+                        if ($team->name === $homeTeam->name || $team->name === $awayTeam->name) {
+                            $highlightClass = 'highlight-team';
+                        }
+                        @endphp
+                        <tr>
+                            <td class="{{ $positionClass }}">{{ $loop->iteration }}</td>
+                            <td class="{{ $highlightClass }}">{{ $team->name }}</td>
+                            <td class="{{ $highlightClass }}">{{ $team->t_played }}</td>
+                            <td class="{{ $highlightClass }}">{{ $team->t_goals_for }}</td>
+                            <td class="{{ $highlightClass }}">{{ $team->t_goals_against }}</td>
+                            <td class="{{ $highlightClass }}"><b>{{ $team->points }}</b></td>
+                        </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </p>
+        </div>
+    </div>
+</div>
+
+             <!--lato destro -->
+
+
     </div>
 
 </div>

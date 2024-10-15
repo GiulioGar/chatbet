@@ -503,3 +503,176 @@
     color: #333;
     margin: 0;
 }
+    /* Stile per migliorare l'aspetto delle tab */
+    #customTabsSection .nav-tabs {
+        border-bottom: 2px solid #35AD79;
+    }
+    #customTabsSection .nav-tabs .nav-link {
+        color: #343A40;
+        font-weight: bold;
+        border: 1px solid transparent;
+        border-radius: 0;
+        padding: 10px 20px;
+        transition: color 0.3s ease, background-color 0.3s ease;
+    }
+    #customTabsSection .nav-tabs .nav-link.active {
+        color: #fff;
+        background-color: #35AD79;
+        border-color: #35AD79;
+    }
+    #customTabsSection .nav-tabs .nav-link:hover {
+        color: #2293cd;
+    }
+
+    /* Stile per il contenuto delle tab */
+    #customTabsSection .tab-content {
+        border: 1px solid #e3e3e3;
+        border-top: none;
+        padding: 20px;
+        background-color: #f9f9f9;
+    }
+
+    /* Effetti di transizione */
+    .tab-pane {
+        opacity: 0;
+        transition: opacity 0.5s ease;
+    }
+    .tab-pane.show {
+        opacity: 1;
+    }
+
+    /* Card personalizzate */
+    .card-custom {
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        border: none;
+        margin-bottom: 20px;
+    }
+
+    /* Mantiene gli elementi delle tab allineati e si adattano al contenitore */
+    #customTabs {
+        display: flex;
+        justify-content: space-between; /* Distribuisce le tab in modo uniforme */
+        flex-wrap: nowrap; /* Impedisce che gli elementi vadano a capo */
+        overflow: hidden; /* Assicura che il contenuto non esca dal contenitore */
+    }
+
+    #customTabs .nav-item {
+        flex: 1; /* Ogni elemento nav occupa lo stesso spazio */
+        text-align: center; /* Centra il testo */
+        max-width: 33.33%; /* Limita la larghezza massima di ogni tab */
+    }
+
+    #customTabs .nav-link {
+        white-space: nowrap; /* Impedisce che il testo vada a capo */
+        font-size: 0.8rem; /* Leggermente più piccolo per evitare che esca */
+        padding: 8px 10px; /* Riduce il padding per far entrare il testo */
+        overflow: hidden; /* Impedisce che il testo esca dal contenitore */
+        text-overflow: ellipsis; /* Aggiunge "..." se il testo è troppo lungo */
+    }
+
+    /* Riduce ulteriormente la dimensione del testo per schermi più piccoli */
+    @media (max-width: 768px) {
+        #customTabs .nav-link {
+            font-size: 0.7rem; /* Riduce ulteriormente il testo su schermi piccoli */
+        }
+    }
+
+    @media (max-width: 576px) {
+        #customTabs .nav-link {
+            font-size: 0.65rem; /* Riduce ulteriormente il testo su schermi molto piccoli */
+        }
+    }
+
+     /* Stile generale per la tabella compatta */
+     .compact-matches-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 10px 0;
+        font-size: 0.8rem; /* Font ridotto */
+        text-align: left;
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .compact-matches-table td {
+        padding: 6px 4px;
+        border: 1px solid #ddd;
+        text-align: center;
+        vertical-align: middle;
+    }
+
+    /* Data posizionata sopra il risultato */
+    .compact-matches-table .date {
+        font-size: 0.7rem; /* Font ridotto per la data */
+        display: block;
+        margin-bottom: 2px; /* Spazio tra data e risultato */
+    }
+
+    /* Aumenta lo spazio per il risultato */
+    .compact-matches-table .result {
+        font-weight: bold;
+        font-size: 1rem; /* Aumentato lo spazio per il risultato */
+        color: #343a40;
+        display: block;
+    }
+
+    .compact-matches-table .result-win {
+        color: green;
+    }
+
+    .compact-matches-table .result-loss {
+        color: red;
+    }
+
+    .compact-matches-table .result-draw {
+        color: orange;
+    }
+
+    /* Stile per la squadra */
+    .compact-matches-table .team {
+        font-weight: bold;
+        color: #001330;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 35%; /* Limita la larghezza per evitare overflow */
+    }
+
+    /* Sfondo per la riga separatore tra le squadre */
+    .separator-row td {
+        background-color: #343a40;
+        color: white;
+        font-size: 0.85rem;
+        text-align: center;
+        padding: 6px;
+    }
+
+    /* Responsività */
+    @media (max-width: 768px) {
+        .compact-matches-table {
+            font-size: 0.75rem;
+        }
+
+        .compact-matches-table .result {
+            font-size: 0.9rem;
+        }
+
+        .compact-matches-table .team {
+            max-width: 30%;
+        }
+    }
+
+    @media (max-width: 576px) {
+        .compact-matches-table {
+            font-size: 0.7rem;
+        }
+
+        .compact-matches-table .result {
+            font-size: 0.85rem;
+        }
+
+        .compact-matches-table .team {
+            max-width: 25%;
+        }
+    }
