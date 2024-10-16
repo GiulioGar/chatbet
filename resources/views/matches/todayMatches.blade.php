@@ -13,7 +13,7 @@
             <!-- Menu per le date -->
             <div class="date-menu">
                 <ul class="date-selector">
-                    @for ($i = 0; $i <= 6; $i++)
+                    @for ($i = 0; $i <= 8; $i++)
                         @php
                             $date = \Carbon\Carbon::today()->addDays($i);
                         @endphp
@@ -35,32 +35,59 @@
                         <thead>
                             <tr>
                                 <th>Ora</th>
-                                <th>Casa</th>
-                                <th>Forma</th>
-                                <th>Ospite</th>
-                                <th>Forma</th>
-                                <th>Quote</th>
+                                <th>Campionato</th>
+                                <th colspan="4">Partita</th>
+                                <th>1</th>
+                                <th>X</th>
+                                <th>2</th>
+                                <th>OV 1.5</th>
+                                <th>OV 2.5</th>
+                                <th>OV 3.5</th>
+                                <th>G/G</th>
+                                <th>Corner</th>
                             </tr>
                         </thead>
                         <tbody>
                             @foreach($matches as $match)
-                                <tr>
-                                    <td>{{ \Carbon\Carbon::parse($match->match_time)->format('H:i') }}</td>
-                                    <td>
-                                        <span class="team">{{ $match->homeTeam->name }}</span>
-                                    </td>
-                                    <td>
-                                        <span class="team-form">{{ $match->homeTeam->forma }}</span>
-                                    </td>
-                                    <td>
-                                        <span class="team">{{ $match->awayTeam->name }}</span>
-                                    </td>
-                                    <td>
-                                        <span class="team-form">{{ $match->awayTeam->forma }}</span>
-                                    </td>
-                                    <td>Quote Placeholder</td>
-                                </tr>
-                            @endforeach
+                            <tr>
+                                <!-- Orario della partita -->
+                                <td>{{ \Carbon\Carbon::parse($match->match_time)->format('H:i') }}</td>
+
+                                <!-- Lega della partita -->
+                                <td><span class="league"> {{ config('leagues.by_id.' . $match->homeTeam->league_id, 'Lega Sconosciuta') }} </span></td>
+
+                                <!-- Logo squadra di casa -->
+                                <td><img src="https://media.api-sports.io/football/teams/{{ $match->homeTeam->team_id }}.png" alt="" class="team-logo"></td>
+
+                                <!-- Nome squadra di casa con fascia -->
+                                <td><span class="team">{{ $match->homeTeam->name }}</span> (<span class="team">{{ $match->homeTeam->fascia }}</span>)</td>
+
+                                <!-- Nome squadra ospite con fascia -->
+                                <td><span class="team">{{ $match->awayTeam->name }} (<span class="team">{{ $match->awayTeam->fascia }}</span>)</td>
+
+                                <!-- Logo squadra ospite -->
+                                <td><img src="https://media.api-sports.io/football/teams/{{ $match->awayTeam->team_id }}.png" alt="" class="team-logo"></td>
+
+
+                                <!-- Visualizziamo le probabilità per il match -->
+                                <td><span>{{ number_format($matchesProbabilities[$match->id]['homeWin'] * 100, 0) }}%</span></td>
+                                <td><span>{{ number_format($matchesProbabilities[$match->id]['draw'] * 100, 0) }}%</span></td>
+                                <td><span>{{ number_format($matchesProbabilities[$match->id]['awayWin'] * 100, 0) }}%</span></td>
+
+                                <!-- Visualizziamo le probabilità Over -->
+                                <td><span>{{ number_format($overUnderProbabilities[$match->id]['over_1_5'], 0) }}%</span></td>
+                                <td><span>{{ number_format($overUnderProbabilities[$match->id]['over_2_5'], 0) }}%</span></td>
+                                <td><span>{{ number_format($overUnderProbabilities[$match->id]['over_3_5'], 0) }}%</span></td>
+                                <td><span>{{ number_format($overUnderProbabilities[$match->id]['both_teams_to_score'], 0) }}%</span></td>
+
+
+                                <!-- Visualizziamo i corner attesi -->
+                                 <td> @if(isset($expectedCornersData[$match->id])) <span>{{ number_format($expectedCornersData[$match->id], 2) }}</span> @else <span>N/A</span> @endif </td>
+
+                            </tr>
+                        @endforeach
+
+
                         </tbody>
                     </table>
                 @endif

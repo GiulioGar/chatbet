@@ -131,7 +131,9 @@
                             <a class="dropdown-item" href="{{ route('league.show', ['leagueSlug' => 'serie-a']) }}">Serie A</a>
                           </div>
                         </li>
-                        <li class="rd-nav-item"><a class="rd-nav-link" href="https://livedemo00.template-help.com/wt_63853_v4/soccer/index.html">Typography</a></li>
+                        <li class="rd-nav-item">
+                            <a class="rd-nav-link" href="{{ route('match.todayMatches', ['date' => \Carbon\Carbon::today()->format('Y-m-d')]) }}">Partite</a>
+                        </li>
                         <li class="rd-nav-item"><a class="rd-nav-link" href="https://livedemo00.template-help.com/wt_63853_v4/soccer/index.html">Contact us</a></li>
                         @if(auth()->check() && auth()->user()->hasRole('admin'))
                         <li class="rd-nav-item dropdown">

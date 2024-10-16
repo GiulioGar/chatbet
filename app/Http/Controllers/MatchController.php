@@ -655,11 +655,51 @@ public function todayMatches($date = null)
     // Recupera i match per la data selezionata
     $matches = Matches::whereDate('match_date', $date)->orderBy('match_time', 'asc')->get();
 
+    // Array per conservare le probabilità di ciascun match
+    $matchesProbabilities = [];
+    $overUnderProbabilities = []; // Aggiungiamo anche le probabilità di Over/Under
+    $expectedCornersData = []; // Nuovo array per conservare i corner attesi
+
+    // Itera su ogni match e calcola le probabilità e corner attesi
+    foreach ($matches as $match) {
+        $homeTeam = $match->homeTeam;
+        $awayTeam = $match->awayTeam;
+
+        // Calcola i punteggi delle squadre
+        $teamScores = $this->calculateTeamScores($homeTeam, $awayTeam);
+
+        // Calcola le probabilità per il match
+        try {
+            $probabilities = $this->calculateMatchProbabilities($teamScores['homeTeamScore'], $teamScores['awayTeamScore']);
+            $matchesProbabilities[$match->id] = $probabilities;
+
+            // Calcoliamo anche le probabilità Over/Under per ogni match
+            $overUnder = $this->calculateOverUnderProbabilities($homeTeam, $awayTeam);
+            $overUnderProbabilities[$match->id] = $overUnder;
+
+            // Calcola i corner attesi
+            $expectedCorners = $this->calculateExpectedCorners($homeTeam, $awayTeam);
+            $expectedCornersData[$match->id] = $expectedCorners;
+        } catch (\Exception $e) {
+            Log::error("Errore nel calcolo delle probabilità o corner per il match con ID {$match->id}: " . $e->getMessage());
+            // Imposta probabilità a null in caso di errore
+            $matchesProbabilities[$match->id] = null;
+            $overUnderProbabilities[$match->id] = null;
+            $expectedCornersData[$match->id] = null;
+        }
+    }
+
     return view('matches.todayMatches', [
         'matches' => $matches,
         'selectedDate' => $date,
+        'matchesProbabilities' => $matchesProbabilities, // Passiamo le probabilità alla vista
+        'overUnderProbabilities' => $overUnderProbabilities, // Aggiungiamo anche le probabilità Over/Under
+        'expectedCornersData' => $expectedCornersData, // Aggiungiamo i corner attesi
     ]);
 }
+
+
+
 
 
 
