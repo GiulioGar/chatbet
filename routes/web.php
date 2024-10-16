@@ -40,6 +40,11 @@ Route::get('/league/{leagueSlug}', [LeagueController::class, 'show'])->name('lea
 //rotta per la pagina delle statistiche partita
 Route::get('/statMatch/{homeTeam}/{awayTeam}', [MatchController::class, 'showStatistics'])->name('match.statMatch');
 
+// Rotta per visualizzare i match per una data specifica (default: oggi)
+Route::get('/todayMatches/{date?}', [MatchController::class, 'todayMatches'])->name('match.todayMatches');
+
+
+
 
 
 

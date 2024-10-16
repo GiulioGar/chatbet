@@ -588,11 +588,12 @@
         width: 100%;
         border-collapse: collapse;
         margin: 10px 0;
-        font-size: 0.8rem; /* Font ridotto */
+        font-size: 0.75rem; /* Font ridotto */
         text-align: left;
         border-radius: 8px;
         overflow: hidden;
         box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        background-color: #fff;
     }
 
     .compact-matches-table td {
@@ -604,7 +605,7 @@
 
     /* Data posizionata sopra il risultato */
     .compact-matches-table .date {
-        font-size: 0.7rem; /* Font ridotto per la data */
+        font-size: 0.65rem; /* Font ridotto per la data */
         display: block;
         margin-bottom: 2px; /* Spazio tra data e risultato */
     }
@@ -612,21 +613,21 @@
     /* Aumenta lo spazio per il risultato */
     .compact-matches-table .result {
         font-weight: bold;
-        font-size: 1rem; /* Aumentato lo spazio per il risultato */
+        font-size: 0.8rem; /* Aumentato lo spazio per il risultato */
         color: #343a40;
         display: block;
     }
 
     .compact-matches-table .result-win {
-        color: green;
+        color: rgb(4, 88, 4);
     }
 
     .compact-matches-table .result-loss {
-        color: red;
+        color: rgb(165, 1, 1);
     }
 
     .compact-matches-table .result-draw {
-        color: orange;
+        color: rgb(235, 153, 2);
     }
 
     /* Stile per la squadra */
@@ -676,3 +677,110 @@
             max-width: 25%;
         }
     }
+
+    .highlighted-team {
+        background-color: #f0f8ff; /* Colore di evidenziazione */
+        font-weight: bold;
+    }
+
+    .compact-matches-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 20px;
+    }
+
+    .compact-matches-table .separator-row {
+        background-color: #343a40;
+        color: white;
+        font-size: 0.85rem;
+        text-align: center;
+        padding: 6px;
+    }
+
+
+    .scrollable-matches {
+        max-height: 200px; /* Altezza massima per la sezione scrollabile */
+        overflow-y: auto;  /* Abilita lo scroll verticale */
+        padding: 10px;
+    }
+
+    .scroll-match-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 5px 0;
+    }
+
+    .scrollable-table {
+        max-height: 330px; /* Limita l'altezza a 200px, puoi modificarlo a piacimento */
+        overflow-y: auto; /* Abilita lo scroll verticale */
+        display: block; /* Necessario per lo scroll nel tbody */
+    }
+
+    .scrollable-table tbody {
+        display: block; /* Necessario per far funzionare lo scroll */
+    }
+
+    .scrollable-table thead, .scrollable-table tr {
+        display: table;
+        width: 100%;
+        table-layout: fixed;
+    }
+
+    .scrollable-table th, .scrollable-table td {
+        width: 33%; /* Assicura che le celle abbiano la stessa larghezza */
+    }
+
+    .highlighted-team {
+        background-color: #f0f8ff; /* Colore di evidenziazione */
+        font-weight: bold;
+    }
+
+    .under-1-5-darkest-red {
+        background-color: #8B0000; /* Rosso molto scuro */
+        color: white!important;
+        border-radius: 5px;
+    }
+
+    .under-1-5-dark-red {
+        background-color: #B22222; /* Rosso scuro */
+        color: white!important;
+        border-radius: 5px;
+    }
+
+    .under-2-5-light-red {
+        background-color: #ff8a7d; /* Rosso chiaro */
+        color: black;
+        border-radius: 5px;
+    }
+
+    .over-2-5-light-green {
+        background-color: #98FB98; /* Verde chiaro */
+        color: black;
+        border-radius: 5px;
+    }
+
+    .over-3-5-dark-green {
+        background-color: #228B22; /* Verde scuro */
+        color: white!important;
+        border-radius: 5px;
+    }
+
+    .over-5-darkest-green {
+        background-color: #006400; /* Verde molto scuro */
+        color: white!important;
+        border-radius: 5px;
+    }
+
+    .gol-gol-green {
+        background-color: #006400; /* Verde per Gol-Gol */
+        color: white!important;
+        border-radius: 5px;
+    }
+
+    .no-gol-red {
+        background-color: #8B0000; /* Rosso per No Gol */
+        color: white!important;
+        border-radius: 5px;
+    }
+
+

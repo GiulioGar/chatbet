@@ -7,6 +7,7 @@ use App\Models\Matches;
 use App\Models\Team;
 use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\LeagueController;
+use Carbon\Carbon; // Importa Carbon per la gestione delle date
 
 class MatchController extends Controller
 {
@@ -227,6 +228,11 @@ $awayPointsAwayPercentage = $awayPointsGeneral > 0 ? round(($awayPointsAway / $a
                     ->where('away_id', $awayTeamData->team_id)
                     ->first();
 
+
+        // Ottieni tutte le partite per entrambe le squadre
+        $homeTeamMatches = $this->getAllMatches($homeTeamData->team_id);
+        $awayTeamMatches = $this->getAllMatches($awayTeamData->team_id);
+
     // Ottieni gli ultimi 5 risultati per ciascuna squadra
     $homeTeamLastFive = $this->getLastFiveMatches($homeTeamData->team_id);
     $awayTeamLastFive = $this->getLastFiveMatches($awayTeamData->team_id);
@@ -280,6 +286,8 @@ $awayPointsAwayPercentage = $awayPointsGeneral > 0 ? round(($awayPointsAway / $a
         'awayGolOver25Away' => $awayGolOver25Away,
         'expectedCorners' => $expectedCorners,
         'overPercentages' => $overPercentages,
+        'homeTeamMatches' => $homeTeamMatches,
+        'awayTeamMatches' => $awayTeamMatches,
     ]);
 
 }
@@ -394,6 +402,19 @@ $awayPointsAwayPercentage = $awayPointsGeneral > 0 ? round(($awayPointsAway / $a
             'awayWin' => $probabilitaB  // Vittoria della squadra ospite (Squadra B)
         ];
     }
+
+    private function getAllMatches($teamId)
+{
+    return Matches::where(function ($query) use ($teamId) {
+                $query->where('home_id', $teamId)
+                      ->orWhere('away_id', $teamId);
+            })
+            ->whereNotNull('home_score')
+            ->whereNotNull('away_score')
+            ->orderBy('match_date', 'desc')
+            ->get();
+}
+
 
     /**
      * Ottiene gli ultimi 5 match di una squadra.
@@ -617,6 +638,27 @@ public function calculateOverPercentages($teamData, $opponentData)
     }
 
     return $overPercentages;
+}
+
+
+//PAGINA MATCHES DI OGGI//
+
+
+public function todayMatches($date = null)
+{
+    if ($date === null) {
+        $date = \Carbon\Carbon::today();
+    } else {
+        $date = \Carbon\Carbon::parse($date);
+    }
+
+    // Recupera i match per la data selezionata
+    $matches = Matches::whereDate('match_date', $date)->orderBy('match_time', 'asc')->get();
+
+    return view('matches.todayMatches', [
+        'matches' => $matches,
+        'selectedDate' => $date,
+    ]);
 }
 
 

@@ -1523,7 +1523,7 @@ $awayAverageRedCardsCombinedAway = round($awayAverageRedCardsCombinedAway, 1);
  <div class="col-md-4">
     <!-- Prima Card: Sezione per statistiche aggiuntive -->
     <div class="card card-custom">
-        <div class="card-header-custom">Ultime 7 gare</div>
+        <div class="card-header-custom">ANDAMENTO</div>
         <div class="card-body">
             <!-- Sezione Tab personalizzata -->
             <div id="customTabsSection">
@@ -1540,113 +1540,259 @@ $awayAverageRedCardsCombinedAway = round($awayAverageRedCardsCombinedAway, 1);
                 </ul>
                 <div class="tab-content" id="customTabsContent">
                     <div class="tab-pane fade show active" id="latestMatches" role="tabpanel" aria-labelledby="latestMatches-tab">
+
                         <!-- Contenuto Ultime gare -->
-                        <table class="compact-matches-table">
-                            <tbody>
-                                <!-- Intestazione per la squadra di casa -->
-                                <tr class="separator-row">
-                                    <td colspan="4">Calcio Como</td>
-                                </tr>
 
-                                <!-- Partite della squadra di casa -->
-                                <tr>
-                                    <td><span class="team">Napoli</span></td>
-                                    <td>
-                                        <span class="date">04/10/24</span>
-                                        <span class="result result-loss">3 : 1</span>
-                                    </td>
-                                    <td><span class="team">Calcio Como</span></td>
-                                </tr>
-                                <tr>
-                                    <td><span class="team">Calcio Como</span></td>
-                                    <td>
-                                        <span class="date">29/09/24</span>
-                                        <span class="result result-win">3 : 2</span>
-                                    </td>
-                                    <td><span class="team">Hellas Verona</span></td>
-                                </tr>
-                                <tr>
-                                    <td><span class="team">Atalanta</span></td>
-                                    <td>
-                                        <span class="date">24/09/24</span>
-                                        <span class="result result-loss">2 : 3</span>
-                                    </td>
-                                    <td><span class="team">Calcio Como</span></td>
-                                </tr>
-                                <tr>
-                                    <td><span class="team">Calcio Como</span></td>
-                                    <td>
-                                        <span class="date">14/09/24</span>
-                                        <span class="result result-draw">2 : 2</span>
-                                    </td>
-                                    <td><span class="team">Bologna</span></td>
-                                </tr>
-                                <tr>
-                                    <td><span class="team">Udinese</span></td>
-                                    <td>
-                                        <span class="date">01/09/24</span>
-                                        <span class="result result-win">1 : 0</span>
-                                    </td>
-                                    <td><span class="team">Calcio Como</span></td>
-                                </tr>
+            <!-- Tabella per la squadra di casa -->
+            <table class="compact-matches-table scrollable-table">
+                <thead>
+                    <tr class="separator-row">
+                        <th colspan="3">{{ $homeTeam->name }}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach($homeTeamMatches as $match)
+                        <tr>
+                            <td class="{{ $match->home_id == $homeTeam->team_id ? 'highlighted-team' : '' }}">
+                                <span class="team">{{ $match->home_id == $homeTeam->team_id ? $homeTeam->name : $match->homeTeam->name }}</span>
+                            </td>
+                            <td>
+                                <span class="date">{{ \Carbon\Carbon::parse($match->match_date)->format('d/m/y') }}</span>
+                                <span class="result
+                                    {{ $match->home_id == $homeTeam->team_id
+                                        ? ($match->home_score > $match->away_score ? 'result-win' : ($match->home_score < $match->away_score ? 'result-loss' : 'result-draw'))
+                                        : ($match->away_score > $match->home_score ? 'result-win' : ($match->away_score < $match->home_score ? 'result-loss' : 'result-draw')) }}">
+                                    {{ $match->home_score }} : {{ $match->away_score }}
+                                </span>
+                            </td>
+                            <td class="{{ $match->away_id == $homeTeam->team_id ? 'highlighted-team' : '' }}">
+                                <span class="team">{{ $match->away_id == $homeTeam->team_id ? $homeTeam->name : $match->awayTeam->name }}</span>
+                            </td>
+                        </tr>
+                    @endforeach
+                </tbody>
+            </table>
 
-                                <!-- Separatore per squadra ospite -->
-                                <tr class="separator-row">
-                                    <td colspan="4">AC Parma</td>
-                                </tr>
+            <!-- Tabella per la squadra ospite -->
+            <table class="compact-matches-table scrollable-table">
+                <thead>
+                    <tr class="separator-row">
+                        <th colspan="3">{{ $awayTeam->name }}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach($awayTeamMatches as $match)
+                        <tr>
+                            <td class="{{ $match->home_id == $awayTeam->team_id ? 'highlighted-team' : '' }}">
+                                <span class="team">{{ $match->home_id == $awayTeam->team_id ? $awayTeam->name : $match->homeTeam->name }}</span>
+                            </td>
+                            <td>
+                                <span class="date">{{ \Carbon\Carbon::parse($match->match_date)->format('d/m/y') }}</span>
+                                <span class="result
+                                    {{ $match->home_id == $awayTeam->team_id
+                                        ? ($match->home_score > $match->away_score ? 'result-win' : ($match->home_score < $match->away_score ? 'result-loss' : 'result-draw'))
+                                        : ($match->away_score > $match->home_score ? 'result-win' : ($match->away_score < $match->home_score ? 'result-loss' : 'result-draw')) }}">
+                                    {{ $match->home_score }} : {{ $match->away_score }}
+                                </span>
+                            </td>
+                            <td class="{{ $match->away_id == $awayTeam->team_id ? 'highlighted-team' : '' }}">
+                                <span class="team">{{ $match->away_id == $awayTeam->team_id ? $awayTeam->name : $match->awayTeam->name }}</span>
+                            </td>
+                        </tr>
+                    @endforeach
+                </tbody>
+            </table>
 
-                                <!-- Partite della squadra ospite -->
-                                <tr>
-                                    <td><span class="team">Bologna</span></td>
-                                    <td>
-                                        <span class="date">06/10/24</span>
-                                        <span class="result result-draw">0 : 0</span>
-                                    </td>
-                                    <td><span class="team">AC Parma</span></td>
-                                </tr>
-                                <tr>
-                                    <td><span class="team">AC Parma</span></td>
-                                    <td>
-                                        <span class="date">30/09/24</span>
-                                        <span class="result result-loss">0 : 1</span>
-                                    </td>
-                                    <td><span class="team">Cagliari Calcio</span></td>
-                                </tr>
-                                <tr>
-                                    <td><span class="team">Lecce</span></td>
-                                    <td>
-                                        <span class="date">27/09/24</span>
-                                        <span class="result result-draw">2 : 2</span>
-                                    </td>
-                                    <td><span class="team">AC Parma</span></td>
-                                </tr>
-                                <tr>
-                                    <td><span class="team">AC Parma</span></td>
-                                    <td>
-                                        <span class="date">16/09/24</span>
-                                        <span class="result result-loss">2 : 3</span>
-                                    </td>
-                                    <td><span class="team">Udinese</span></td>
-                                </tr>
-                                <tr>
-                                    <td><span class="team">Napoli</span></td>
-                                    <td>
-                                        <span class="date">31/08/24</span>
-                                        <span class="result result-loss">2 : 1</span>
-                                    </td>
-                                    <td><span class="team">AC Parma</span></td>
-                                </tr>
-                            </tbody>
-                        </table>
 
-                    </div>
+</div>
+
                     <div class="tab-pane fade" id="overUnder" role="tabpanel" aria-labelledby="overUnder-tab">
                         <!-- Contenuto Over e Under -->
-                        <p>Inserisci qui le statistiche di Over e Under.</p>
+                  <!-- Tabella per la squadra di casa -->
+<table class="compact-matches-table scrollable-table">
+    <thead>
+        <tr class="separator-row">
+            <th colspan="3">{{ $homeTeam->name }}</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach($homeTeamMatches as $match)
+            @php
+                // Somma dei gol della partita
+                $totalGoals = $match->home_score + $match->away_score;
+
+                // Assegna la classe del colore e la stringa in base alla somma dei gol
+                if ($totalGoals == 0) {
+                    $resultClass = 'under-1-5-darkest-red';
+                    $resultText = 'Under 1.5';
+                } elseif ($totalGoals == 1) {
+                    $resultClass = 'under-1-5-dark-red';
+                    $resultText = 'Under 1.5';
+                } elseif ($totalGoals == 2) {
+                    $resultClass = 'under-2-5-light-red';
+                    $resultText = 'Under 2.5';
+                } elseif ($totalGoals == 3) {
+                    $resultClass = 'over-2-5-light-green';
+                    $resultText = 'Over 2.5';
+                } elseif ($totalGoals == 4) {
+                    $resultClass = 'over-3-5-dark-green';
+                    $resultText = 'Over 3.5';
+                } else {
+                    $resultClass = 'over-5-darkest-green';
+                    $resultText = 'Over';
+                }
+            @endphp
+
+            <tr>
+                <td class="{{ $match->home_id == $homeTeam->team_id ? 'highlighted-team' : '' }}">
+                    <span class="team">{{ $match->home_id == $homeTeam->team_id ? $homeTeam->name : $match->homeTeam->name }}</span>
+                </td>
+                <td>
+                    <span class="date">{{ \Carbon\Carbon::parse($match->match_date)->format('d/m/y') }}</span>
+                    <span class="result {{ $resultClass }}">
+                        {{ $resultText }}
+                    </span>
+                </td>
+                <td class="{{ $match->away_id == $homeTeam->team_id ? 'highlighted-team' : '' }}">
+                    <span class="team">{{ $match->away_id == $homeTeam->team_id ? $homeTeam->name : $match->awayTeam->name }}</span>
+                </td>
+            </tr>
+        @endforeach
+    </tbody>
+</table>
+
+<!-- Tabella per la squadra ospite -->
+<table class="compact-matches-table scrollable-table">
+    <thead>
+        <tr class="separator-row">
+            <th colspan="3">{{ $awayTeam->name }}</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach($awayTeamMatches as $match)
+            @php
+                // Somma dei gol della partita
+                $totalGoals = $match->home_score + $match->away_score;
+
+                // Assegna la classe del colore e la stringa in base alla somma dei gol
+                if ($totalGoals == 0) {
+                    $resultClass = 'under-1-5-darkest-red';
+                    $resultText = 'Under 1.5';
+                } elseif ($totalGoals == 1) {
+                    $resultClass = 'under-1-5-dark-red';
+                    $resultText = 'Under 1.5';
+                } elseif ($totalGoals == 2) {
+                    $resultClass = 'under-2-5-light-red';
+                    $resultText = 'Under 2.5';
+                } elseif ($totalGoals == 3) {
+                    $resultClass = 'over-2-5-light-green';
+                    $resultText = 'Over 2.5';
+                } elseif ($totalGoals == 4) {
+                    $resultClass = 'over-3-5-dark-green';
+                    $resultText = 'Over 3.5';
+                } else {
+                    $resultClass = 'over-5-darkest-green';
+                    $resultText = 'Over';
+                }
+            @endphp
+
+            <tr>
+                <td class="{{ $match->home_id == $awayTeam->team_id ? 'highlighted-team' : '' }}">
+                    <span class="team">{{ $match->home_id == $awayTeam->team_id ? $awayTeam->name : $match->homeTeam->name }}</span>
+                </td>
+                <td>
+                    <span class="date">{{ \Carbon\Carbon::parse($match->match_date)->format('d/m/y') }}</span>
+                    <span class="result {{ $resultClass }}">
+                        {{ $resultText }}
+                    </span>
+                </td>
+                <td class="{{ $match->away_id == $awayTeam->team_id ? 'highlighted-team' : '' }}">
+                    <span class="team">{{ $match->away_id == $awayTeam->team_id ? $awayTeam->name : $match->awayTeam->name }}</span>
+                </td>
+            </tr>
+        @endforeach
+    </tbody>
+</table>
+
                     </div>
                     <div class="tab-pane fade" id="goalGoal" role="tabpanel" aria-labelledby="goalGoal-tab">
                         <!-- Contenuto Gol Gol -->
-                        <p>Inserisci qui le statistiche di Gol Gol.</p>
+                       <!-- Tabella per la squadra di casa -->
+<table class="compact-matches-table scrollable-table">
+    <thead>
+        <tr class="separator-row">
+            <th colspan="3">{{ $homeTeam->name }}</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach($homeTeamMatches as $match)
+            @php
+                // Verifica se entrambe le squadre hanno segnato almeno un gol
+                if ($match->home_score > 0 && $match->away_score > 0) {
+                    $resultClass = 'gol-gol-green';
+                    $resultText = 'Gol-Gol';
+                } else {
+                    $resultClass = 'no-gol-red';
+                    $resultText = 'No Gol';
+                }
+            @endphp
+
+            <tr>
+                <td class="{{ $match->home_id == $homeTeam->team_id ? 'highlighted-team' : '' }}">
+                    <span class="team">{{ $match->home_id == $homeTeam->team_id ? $homeTeam->name : $match->homeTeam->name }}</span>
+                </td>
+                <td>
+                    <span class="date">{{ \Carbon\Carbon::parse($match->match_date)->format('d/m/y') }}</span>
+                    <span class="result {{ $resultClass }}">
+                        {{ $resultText }}
+                    </span>
+                </td>
+                <td class="{{ $match->away_id == $homeTeam->team_id ? 'highlighted-team' : '' }}">
+                    <span class="team">{{ $match->away_id == $homeTeam->team_id ? $homeTeam->name : $match->awayTeam->name }}</span>
+                </td>
+            </tr>
+        @endforeach
+    </tbody>
+</table>
+
+<!-- Tabella per la squadra ospite -->
+<table class="compact-matches-table scrollable-table">
+    <thead>
+        <tr class="separator-row">
+            <th colspan="3">{{ $awayTeam->name }}</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach($awayTeamMatches as $match)
+            @php
+                // Verifica se entrambe le squadre hanno segnato almeno un gol
+                if ($match->home_score > 0 && $match->away_score > 0) {
+                    $resultClass = 'gol-gol-green';
+                    $resultText = 'Gol-Gol';
+                } else {
+                    $resultClass = 'no-gol-red';
+                    $resultText = 'No Gol';
+                }
+            @endphp
+
+            <tr>
+                <td class="{{ $match->home_id == $awayTeam->team_id ? 'highlighted-team' : '' }}">
+                    <span class="team">{{ $match->home_id == $awayTeam->team_id ? $awayTeam->name : $match->homeTeam->name }}</span>
+                </td>
+                <td>
+                    <span class="date">{{ \Carbon\Carbon::parse($match->match_date)->format('d/m/y') }}</span>
+                    <span class="result {{ $resultClass }}">
+                        {{ $resultText }}
+                    </span>
+                </td>
+                <td class="{{ $match->away_id == $awayTeam->team_id ? 'highlighted-team' : '' }}">
+                    <span class="team">{{ $match->away_id == $awayTeam->team_id ? $awayTeam->name : $match->awayTeam->name }}</span>
+                </td>
+            </tr>
+        @endforeach
+    </tbody>
+</table>
+
                     </div>
                 </div>
             </div>

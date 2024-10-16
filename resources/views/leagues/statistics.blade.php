@@ -13,7 +13,7 @@
 
 <!-- Container Principale -->
 <div class="container">
-    <div class="row">
+    <div class="row tableMatches">
 
         <!-- Colonna Sinistra: Logo e Informazioni -->
         <div class="col-md-4">
