@@ -9,8 +9,22 @@
     --border-color: #dee2e6;
     --hover-bg-color: #e9ecef;
     --active-bg-color: #0056b3;
-    --transition-speed: 0.3s;
     --font-family: 'Roboto', sans-serif;
+}
+
+/* Classe per nascondere le colonne */
+.hidden-column {
+    opacity: 0;
+    visibility: hidden;
+    height: 0;
+    padding: 0;
+}
+
+.visible-column {
+    opacity: 1;
+    visibility: visible;
+    height: auto;
+    padding: initial;
 }
 
 /* Reset base styles */
@@ -45,7 +59,7 @@ body {
 .no-matches-message {
     font-size: 1.2rem;
     text-align: center;
-    color: var(--light-text-color);
+    color: var(--light-text-color)!important;
     padding: 40px;
     background-color: var(--white-color);
     border-radius: 12px;
@@ -86,13 +100,11 @@ body {
     text-decoration: none;
     font-weight: 500;
     border: 1px solid var(--border-color);
-    transition: background-color var(--transition-speed), color var(--transition-speed), transform var(--transition-speed);
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
 }
 
 .date-selector li a:hover {
     background-color: var(--hover-bg-color);
-    transform: translateY(-2px);
 }
 
 .date-selector li.active a {
@@ -103,18 +115,57 @@ body {
     box-shadow: 0 4px 12px rgba(0, 123, 255, 0.2);
 }
 
+/* Sezione Filtri */
+.filters {
+    margin-bottom: 20px;
+    padding: 15px;
+    background-color: var(--white-color);
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.filters h5 {
+    margin-bottom: 10px;
+    font-size: 1rem;
+    color: var(--text-color);
+    text-align: center;
+}
+
+.filter-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    justify-content: center;
+}
+
+.filter-button {
+    background-color: var(--hover-bg-color);
+    color: var(--text-color);
+    border: none;
+    padding: 8px 16px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+}
+
+.filter-button:hover {
+    background-color: var(--active-bg-color);
+    color: var(--white-color);
+}
+
+.filter-button.active {
+    background-color: var(--primary-color);
+    color: var(--white-color);
+    box-shadow: 0 4px 12px rgba(0, 123, 255, 0.2);
+}
+
 /* Contenitore per le partite */
 .matches-container {
     background-color: var(--white-color);
     padding: 30px;
     border-radius: 12px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-    transition: transform var(--transition-speed), box-shadow var(--transition-speed);
-}
-
-.matches-container:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
 }
 
 /* Stile per la tabella delle partite */
@@ -123,18 +174,25 @@ body {
     border-collapse: separate;
     border-spacing: 0;
     margin-top: 20px;
-    font-size: 0.75rem;
+    font-size: 0.9rem;
+    table-layout: fixed; /* Migliora l'allineamento delle colonne */
 }
 
 .matches-table thead {
     background-color: var(--primary-color);
     color: var(--white-color);
+    position: sticky;
+    top: 0;
+    z-index: 1;
 }
 
 .matches-table th, .matches-table td {
-    padding: 15px 20px;
+    padding: 12px 15px;
     border-bottom: 1px solid var(--border-color);
     text-align: center;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .matches-table th {
@@ -143,28 +201,13 @@ body {
     letter-spacing: 0.05em;
 }
 
-.matches-table tbody tr {
-    transition: background-color var(--transition-speed);
-}
-
 .matches-table tbody tr:nth-child(even) {
     background-color: #f1f3f5;
 }
 
-.matches-table tbody tr:hover {
-    background-color: var(--hover-bg-color);
-}
-
 .team {
-    font-size: 0.8rem;
+    font-size: 0.85rem;
     color: var(--text-color);
-}
-
-.team-form {
-    display: block;
-    font-weight: 600;
-    color: var(--secondary-color);
-    margin-top: 5px;
 }
 
 .matches-table td:last-child {
@@ -172,8 +215,15 @@ body {
     font-weight: 600;
 }
 
-.team-logo {width: 30px;}
+.team-logo {
+    width: 35px!important; /* Dimensione fissa del logo */
+    height: auto; /* Mantiene il rapporto di aspetto */
+}
 
+/* Classe per nascondere le colonne */
+.hidden-column {
+    display: none;
+}
 
 /* Responsività */
 @media (max-width: 992px) {
@@ -197,6 +247,19 @@ body {
     .date-selector li a {
         padding: 6px 14px;
         font-size: 0.8rem;
+    }
+
+    .filters {
+        padding: 10px;
+    }
+
+    .filter-group {
+        flex-direction: column;
+    }
+
+    .filter-button {
+        width: 100%;
+        text-align: center;
     }
 }
 
@@ -235,3 +298,83 @@ body {
         white-space: nowrap;
     }
 }
+
+/* Gestione delle colonne per il campionato e il nome delle squadre */
+.matches-table th:nth-child(2), /* Campionato */
+.matches-table td:nth-child(2),
+.matches-table th:nth-child(4), /* Nome squadra di casa */
+.matches-table td:nth-child(4),
+.matches-table th:nth-child(6), /* Nome squadra ospite */
+.matches-table td:nth-child(6) {
+    width: auto;
+    white-space: nowrap;
+    overflow: visible;
+    text-overflow: ellipsis;
+}
+
+/* Gestione della colonna per i loghi */
+.matches-table th:nth-child(3), /* Logo squadra di casa */
+.matches-table td:nth-child(3),
+.matches-table th:nth-child(7), /* Logo squadra ospite */
+.matches-table td:nth-child(7) {
+    width: 40px;
+    text-align: center;
+}
+
+/* Aggiungiamo una regola per aumentare lo spazio delle colonne del campionato e delle squadre */
+.matches-table th, .matches-table td {
+    padding: 2px 5px;
+}
+
+.matches-table {
+    table-layout: auto;
+    width: 100%;
+}
+
+/* Contenitore del tooltip */
+.tooltip-container {
+    position: relative;
+    cursor: pointer;
+}
+
+/* Tooltip */
+.tooltip-container::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    bottom: 125%; /* Posizionamento sopra l'icona */
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: rgba(0, 0, 0, 0.75); /* Sfondo semi-trasparente */
+    color: #fff;
+    padding: 8px 12px;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    white-space: nowrap;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); /* Effetto ombra */
+}
+
+/* Triangolino del tooltip */
+.tooltip-container::before {
+    content: '';
+    position: absolute;
+    bottom: 110%;
+    left: 50%;
+    transform: translateX(-50%);
+    border-width: 6px;
+    border-style: solid;
+    border-color: rgba(0, 0, 0, 0.75) transparent transparent transparent;
+    opacity: 0;
+    visibility: hidden;
+}
+
+/* Mostra il tooltip */
+.tooltip-container:hover::after,
+.tooltip-container:hover::before {
+    opacity: 1;
+    visibility: visible;
+    transform: translateX(-50%);
+}
+

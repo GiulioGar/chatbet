@@ -498,39 +498,89 @@
 }
 
 .custom-goal-probability-header h2 {
-    font-size: 24px;
-    font-weight: bold;
-    color: #333;
-    margin: 0;
+    font-size: 1.8rem;
+    font-weight: 600;
+    color: #333; /* Colore scuro per un look pulito */
 }
-    /* Stile per migliorare l'aspetto delle tab */
-    #customTabsSection .nav-tabs {
-        border-bottom: 2px solid #35AD79;
-    }
-    #customTabsSection .nav-tabs .nav-link {
-        color: #343A40;
-        font-weight: bold;
-        border: 1px solid transparent;
-        border-radius: 0;
-        padding: 10px 20px;
-        transition: color 0.3s ease, background-color 0.3s ease;
-    }
-    #customTabsSection .nav-tabs .nav-link.active {
-        color: #fff;
-        background-color: #35AD79;
-        border-color: #35AD79;
-    }
-    #customTabsSection .nav-tabs .nav-link:hover {
-        color: #2293cd;
-    }
 
-    /* Stile per il contenuto delle tab */
-    #customTabsSection .tab-content {
-        border: 1px solid #e3e3e3;
-        border-top: none;
-        padding: 20px;
-        background-color: #f9f9f9;
-    }
+.custom-goal-probability-box {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #f9f9f9; /* Sfondo più chiaro */
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1); /* Ombra leggera per un effetto moderno */
+    margin-bottom: 20px;
+}
+
+.custom-team-info {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    width: 25%; /* Spazio più equilibrato */
+}
+
+.custom-team-logo img {
+    width: 60px;
+    height: auto;
+    margin-bottom: 10px;
+    border-radius: 50%; /* Rendere le immagini circolari per un look più morbido */
+}
+
+.custom-team-name {
+    font-size: 1.2rem;
+    font-weight: 500;
+    color: #2c3e50; /* Colore meno invasivo */
+}
+
+.custom-team-stats p {
+    margin: 5px 0;
+    font-size: 1rem;
+    color: #7f8c8d; /* Colore testo più morbido per le statistiche */
+}
+
+.custom-probability-info {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    width: 40%;
+}
+
+.custom-probability-label {
+    font-weight: 600;
+    font-size: 1rem;
+    color: #2c3e50;
+    margin-bottom: 10px;
+}
+
+.custom-probability-bar {
+    width: 100%;
+    background-color: #e9ecef; /* Colore più leggero per la barra di sfondo */
+    border-radius: 10px;
+    height: 15px;
+    position: relative;
+}
+
+.custom-bar {
+    width: 100%;
+    height: 100%;
+    background-color: #e0e0e0;
+    border-radius: 10px;
+}
+
+.custom-fill-bar {
+    height: 100%;
+    background-color: #35ad79; /* Verde morbido per la barra */
+    border-radius: 10px;
+}
+
+.custom-fill-bar.low {
+    background-color: #f76c6c; /* Colore per bassa probabilità */
+}
+
 
     /* Effetti di transizione */
     .tab-pane {
@@ -784,3 +834,56 @@
     }
 
 
+    .custom-header-light {
+        background-color: #f9f9f9;
+        padding: 15px;
+        border-radius: 8px;
+        box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .possibilities-box-ht {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        width: 40%; /* Assicura che tutto si allinei orizzontalmente */
+    }
+
+    .possibility-item-ht {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        width: 100%; /* Mantiene le voci larghe uguali */
+        margin-bottom: 5px;
+    }
+
+    .possibility-label-ht {
+        width: 150px; /* Larghezza fissa per le etichette */
+        font-size: 1rem;
+        font-weight: 500;
+        color: #2c3e50;
+        text-align: left;
+    }
+
+    .percentage-ht {
+        width: 50px; /* Larghezza fissa per la percentuale */
+        font-size: 1rem;
+        font-weight: 600;
+        color: #35ad79;
+        text-align: right;
+    }
+
+    .progress-bar-ht {
+        background-color: #e0e0e0;
+        border-radius: 10px;
+        width: 150px; /* Larghezza fissa per la barra */
+        height: 10px;
+        position: relative;
+        margin: 0 10px;
+    }
+
+    .progress-ht {
+        background-color: #35ad79;
+        height: 100%;
+        border-radius: 10px;
+        transition: width 0.4s ease;
+    }

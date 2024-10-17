@@ -97,7 +97,16 @@
             <div class="col-md-12">
                 <!-- Header -->
                 <div class="card-custom">
-                    <div class="header">Esito incontro</div>
+                    <div class="custom-header-light d-flex align-items-center justify-content-between mb-3">
+                        <div class="d-flex align-items-center">
+                            <img src="{{ asset('images/stats.png') }}" alt="" class="mr-3" style="width: 70px;">
+                            <div>
+                                <h4 class="mb-1">Statistiche risultato</h4>
+                            </div>
+
+                        </div>
+
+                    </div>
                     <!-- Squadra e Percentuali -->
                     <div class="row-team">
                         <img src="https://media.api-sports.io/football/teams/{{ $homeTeam->team_id }}.png" alt="{{ $homeTeam->name }}" class="team-logo">
@@ -235,7 +244,16 @@
 <div class="row">
 <div class="col-md-12">
     <div class="card-custom">
-        <div class="header">Gol & Over</div>
+        <div class="custom-header-light d-flex align-items-center justify-content-between mb-3">
+            <div class="d-flex align-items-center">
+                <img src="{{ asset('images/goal.png') }}" alt="" class="mr-3" style="width: 70px;">
+                <div>
+                    <h4 class="mb-1">Statistiche Gol</h4>
+                </div>
+
+            </div>
+
+        </div>
 
         <div class="row-team">
             <!-- Statistiche Box -->
@@ -534,7 +552,7 @@ round(($awayShots / $awayGamesPlayed) * ($awayCornersTotal / $awayShots),1) : 0;
                     <div class="d-flex align-items-center">
                         <img src="{{ asset('images/corner.png') }}" alt="Corner icon" class="mr-3" style="width: 70px;">
                         <div>
-                            <h4 class="mb-1">Calci d'angolo</h4>
+                            <h4 class="mb-1">STATISTICHE CORNER</h4>
                         </div>
 
                     </div>
@@ -542,39 +560,44 @@ round(($awayShots / $awayGamesPlayed) * ($awayCornersTotal / $awayShots),1) : 0;
                 </div>
 
                 <div class="custom-goal-probability-header">
-                    <h2>Previsione</h2>
+                    <h2>Previsione Corner</h2> <!-- Testo centrato -->
                 </div>
 
                 <div class="custom-goal-probability-box">
+                    <!-- Team Casa -->
                     <div class="custom-team-info">
                         <div class="custom-team-logo">
-                            <img src="https://media.api-sports.io/football/teams/{{ $homeTeam->team_id }}.png" alt="Udinese">
+                            <img src="https://media.api-sports.io/football/teams/{{ $homeTeam->team_id }}.png" alt="{{ $homeTeam->name }}">
                         </div>
                         <div class="custom-team-stats">
                             <span class="custom-team-name">{{ $homeTeam->name }}</span>
-                            <p><b>{{ $homeTeam->t_played > 0 ? round(($homeTeam->t_corners / $homeTeam->t_played), 2) : 0 }}</b></p>
+                            <p>Corner Medi: <b>{{ $homeTeam->t_played > 0 ? round(($homeTeam->t_corners / $homeTeam->t_played), 2) : 0 }}</b></p>
                         </div>
                     </div>
 
+                    <!-- Linea di previsione centrale -->
                     <div class="custom-probability-info">
-                        <span class="custom-probability-label">Linea corner <b>totali</b>: {{ $expectedCorners }}</span>
+                        <span class="custom-probability-label">Linea corner totali: {{ $expectedCorners }}</span>
                         <div class="custom-probability-bar">
                             <div class="custom-bar">
-                                <div class="custom-fill-bar"></div>
+                                <div class="custom-fill-bar" style="width: {{ $expectedCorners / 10 * 100 }}%;"></div>
                             </div>
                         </div>
                     </div>
 
+                    <!-- Team Ospite -->
                     <div class="custom-team-info">
                         <div class="custom-team-logo">
-                            <img src="https://media.api-sports.io/football/teams/{{ $awayTeam->team_id }}.png" alt="Lecce">
+                            <img src="https://media.api-sports.io/football/teams/{{ $awayTeam->team_id }}.png" alt="{{ $awayTeam->name }}">
                         </div>
                         <div class="custom-team-stats">
                             <span class="custom-team-name">{{ $awayTeam->name }}</span>
-                            <p><b>{{ $homeTeam->t_played > 0 ? round(($awayTeam->t_corners / $awayTeam->t_played), 2) : 0 }}</b></p>
+                            <p>Corner Medi: <b>{{ $awayTeam->t_played > 0 ? round(($awayTeam->t_corners / $awayTeam->t_played), 2) : 0 }}</b></p>
                         </div>
                     </div>
                 </div>
+
+
 
                 <div class="custom-corner-data-section">
                     <ul class="nav nav-tabs mb-3" id="cornerTab" role="tablist">
@@ -1501,6 +1524,172 @@ $awayAverageRedCardsCombinedAway = round($awayAverageRedCardsCombinedAway, 1);
                                     <td>{{ $awayAverageRedCardsCombinedTotal }}</td>
                                     <td>{{ $awayAverageRedCardsCombinedHome }}</td>
                                     <td>{{ $awayAverageRedCardsCombinedAway }}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+
+
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+
+
+ <!-- PRIMO TEMPO -->
+
+ @php
+
+// Calcolo delle percentuali Over 0.5
+$homeOver05Percentage = $homeTeam->t_played > 0 ? round(($homeTeam->t_over_0_5_ht / $homeTeam->t_played) * 100, 2) : 0;
+$awayOver05Percentage = $awayTeam->t_played > 0 ? round(($awayTeam->t_over_0_5_ht / $awayTeam->t_played) * 100, 2) : 0;
+$averageOver05 = round(($homeOver05Percentage + $awayOver05Percentage) / 2, 2);
+
+// Calcolo delle percentuali Over 1.5
+$homeOver15Percentage = $homeTeam->t_played > 0 ? round(($homeTeam->t_over_1_5_ht / $homeTeam->t_played) * 100, 2) : 0;
+$awayOver15Percentage = $awayTeam->t_played > 0 ? round(($awayTeam->t_over_1_5_ht / $awayTeam->t_played) * 100, 2) : 0;
+$averageOver15 = round(($homeOver15Percentage + $awayOver15Percentage) / 2, 2);
+
+// Calcolo delle percentuali Over 2.5
+$homeOver25Percentage = $homeTeam->t_played > 0 ? round(($homeTeam->t_over_2_5_ht / $homeTeam->t_played) * 100, 2) : 0;
+$awayOver25Percentage = $awayTeam->t_played > 0 ? round(($awayTeam->t_over_2_5_ht / $awayTeam->t_played) * 100, 2) : 0;
+$averageOver25 = round(($homeOver25Percentage + $awayOver25Percentage) / 2, 2);
+
+ @endphp
+
+
+    <div class="row">
+        <div class="col-md-12">
+            <div class="custom-card-light p-3">
+                <div class="custom-header-light d-flex align-items-center justify-content-between mb-3">
+                    <!-- Parte sinistra: Titolo e Icona -->
+                    <div class="d-flex align-items-center">
+                        <img src="{{ asset('images/half.png') }}" alt="Over Primo Tempo" class="mr-3" style="width: 50px;">
+                        <div>
+                            <h4 class="mb-1" style="font-size: 1.4rem; font-weight: 600; color: #343a40;">Over Primo Tempo</h4>
+                        </div>
+                    </div>
+
+                    <!-- Parte destra: Possibilità con le percentuali -->
+                    <div class="possibilities-box-ht d-flex flex-column align-items-end">
+                        <div class="possibility-item-ht d-flex justify-content-between">
+                            <span class="possibility-label-ht">Over 0.5:</span>
+                            <div class="progress-bar-ht">
+                                <div class="progress-ht" style="width: {{ $averageOver05 }}%;"></div>
+                            </div>
+                            <span class="percentage-ht">{{$averageOver05}}%</span>
+                        </div>
+
+                        <div class="possibility-item-ht d-flex justify-content-between">
+                            <span class="possibility-label-ht">Over 1.5:</span>
+                            <div class="progress-bar-ht">
+                                <div class="progress-ht" style="width: {{ $averageOver15 }}%;"></div>
+                            </div>
+                            <span class="percentage-ht">{{$averageOver15}}%</span>
+                        </div>
+
+                        <div class="possibility-item-ht d-flex justify-content-between">
+                            <span class="possibility-label-ht">Over 2.5:</span>
+                            <div class="progress-bar-ht">
+                                <div class="progress-ht" style="width: {{ $averageOver25 }}%;"></div>
+                            </div>
+                            <span class="percentage-ht">{{$averageOver25}}%</span>
+                        </div>
+                    </div>
+                </div>
+
+
+
+                <div class="row-team">
+                    <!-- Tabella Home Team -->
+                    <div class="team-table">
+                        <div class="team-header">
+                            <img src="https://media.api-sports.io/football/teams/{{ $homeTeam->team_id }}.png" alt="{{ $homeTeam->name }}" class="team-logo">
+                            <div>
+                                <h4>{{ $homeTeam->name }}</h4>
+                                <p style="color:#f0eeee">Difesa:{{ $homeTeam->fascia }}</p>
+                            </div>
+                        </div>
+
+                        <table class="team-stats">
+                            <thead>
+                                <tr>
+                                    <th></th>
+                                    <th>Totale</th>
+                                    <th>Casa</th>
+                                    <th>Trasferta</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Medie per Partita - Statistiche della Squadra -->
+                                <tr>
+                                    <td>Over 0.5 </td>
+                                    <td>{{ $homeTeam->t_played > 0 ? round(($homeTeam->t_over_0_5_ht / $homeTeam->t_played) * 100, 2) : 0 }}%</td>
+                                    <td>{{ $homeTeam->h_played > 0 ? round(($homeTeam->h_over_0_5_ht / $homeTeam->h_played) * 100, 2) : 0 }}%</td>
+                                    <td>{{ $homeTeam->a_played > 0 ? round(($homeTeam->a_over_0_5_ht / $homeTeam->a_played) * 100, 2) : 0 }}%</td>
+                                </tr>
+                                <tr>
+                                    <td>Over 1.5</td>
+                                    <td>{{ $homeTeam->t_played > 0 ? round(($homeTeam->t_over_1_5_ht / $homeTeam->t_played) * 100, 2) : 0 }}%</td>
+                                    <td>{{ $homeTeam->h_played > 0 ? round(($homeTeam->h_over_1_5_ht / $homeTeam->h_played) * 100, 2) : 0 }}%</td>
+                                    <td>{{ $homeTeam->a_played > 0 ? round(($homeTeam->a_over_1_5_ht / $homeTeam->a_played) * 100, 2) : 0 }}%</td>
+                                </tr>
+                                <tr>
+                                    <td>Over 2.5 </td>
+                                    <td>{{ $homeTeam->t_played > 0 ? round(($homeTeam->t_over_2_5_ht / $homeTeam->t_played) * 100, 2) : 0 }}%</td>
+                                    <td>{{ $homeTeam->h_played > 0 ? round(($homeTeam->h_over_2_5_ht / $homeTeam->h_played) * 100, 2) : 0 }}%</td>
+                                    <td>{{ $homeTeam->a_played > 0 ? round(($homeTeam->a_over_2_5_ht / $homeTeam->a_played) * 100, 2) : 0 }}%</td>
+                                </tr>
+
+                            </tbody>
+                        </table>
+
+
+
+
+
+                    </div>
+
+                    <!-- Tabella Away Team -->
+                    <div class="team-table">
+                        <div class="team-header">
+                            <img src="https://media.api-sports.io/football/teams/{{ $awayTeam->team_id }}.png" alt="{{ $awayTeam->name }}" class="team-logo">
+                            <div>
+                                <h4>{{ $awayTeam->name }}</h4>
+                                <p style="color:#f0eeee">Forma attuale:{{ $awayTeam->fascia }}</p>
+                            </div>
+                        </div>
+                        <table class="team-stats">
+                            <thead>
+                                <tr>
+                                    <th></th>
+                                    <th>Totale</th>
+                                    <th>Casa</th>
+                                    <th>Trasferta</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Medie per Partita - Statistiche della Squadra -->
+                                <tr>
+                                    <td>Over 0.5 </td>
+                                    <td>{{ $awayTeam->t_played > 0 ? round(($awayTeam->t_over_0_5_ht / $awayTeam->t_played) * 100, 2) : 0 }}%</td>
+                                    <td>{{ $awayTeam->h_played > 0 ? round(($awayTeam->h_over_0_5_ht / $awayTeam->h_played) * 100, 2) : 0 }}%</td>
+                                    <td>{{ $awayTeam->a_played > 0 ? round(($awayTeam->a_over_0_5_ht / $awayTeam->a_played) * 100, 2) : 0 }}%</td>
+                                </tr>
+                                <tr>
+                                    <td>Over 1.5</td>
+                                    <td>{{ $awayTeam->t_played > 0 ? round(($awayTeam->t_over_1_5_ht / $awayTeam->t_played) * 100, 2) : 0 }}%</td>
+                                    <td>{{ $awayTeam->h_played > 0 ? round(($awayTeam->h_over_1_5_ht / $awayTeam->h_played) * 100, 2) : 0 }}%</td>
+                                    <td>{{ $awayTeam->a_played > 0 ? round(($awayTeam->a_over_1_5_ht / $awayTeam->a_played) * 100, 2) : 0 }}%</td>
+                                </tr>
+                                <tr>
+                                    <td>Over 2.5 </td>
+                                    <td>{{ $awayTeam->t_played > 0 ? round(($awayTeam->t_over_2_5_ht / $awayTeam->t_played) * 100, 2) : 0 }}%</td>
+                                    <td>{{ $awayTeam->h_played > 0 ? round(($awayTeam->h_over_2_5_ht / $awayTeam->h_played) * 100, 2) : 0 }}%</td>
+                                    <td>{{ $awayTeam->a_played > 0 ? round(($awayTeam->a_over_2_5_ht / $awayTeam->a_played) * 100, 2) : 0 }}%</td>
                                 </tr>
                             </tbody>
                         </table>

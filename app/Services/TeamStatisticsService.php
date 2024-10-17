@@ -33,6 +33,7 @@ class TeamStatisticsService
             'h_red_cards' => 0, 'a_red_cards' => 0, 'h_ball_possession' => 0, 'a_ball_possession' => 0,
             't_over_0_5_ht' => 0, 't_over_1_5_ht' => 0, 't_over_2_5_ht' => 0, 't_over_3_5_ht' => 0, 't_gg_ht' => 0,
             't_over_0_5_ft' => 0, 't_over_1_5_ft' => 0, 't_over_2_5_ft' => 0, 't_over_3_5_ft' => 0, 't_gg_ft' => 0,
+            'h_over_0_5_ht' => 0, 'a_over_0_5_ht' => 0,
             'h_over_1_5_ht' => 0, 'a_over_1_5_ht' => 0,
             'h_over_1_5_ft' => 0, 'a_over_1_5_ft' => 0,
             'h_over_2_5_ht' => 0, 'a_over_2_5_ht' => 0,
@@ -216,6 +217,7 @@ class TeamStatisticsService
 
             // Aggiorna i campi per casa/ospite
             if ($isHome) {
+                if ($htGoals > 0) $teamStats['h_over_0_5_ht']++;
                 if ($htGoals > 1) $teamStats['h_over_1_5_ht']++;
                 if ($htGoals > 2) $teamStats['h_over_2_5_ht']++;
                 if ($htGoals > 3) $teamStats['h_over_3_5_ht']++;
@@ -226,6 +228,7 @@ class TeamStatisticsService
                 if ($ftGoals > 3) $teamStats['h_over_3_5_ft']++;
                 if ($match->home_ft > 0 && $match->away_ft > 0) $teamStats['h_gg_ft']++;
             } else {
+                if ($htGoals > 0) $teamStats['a_over_0_5_ht']++;
                 if ($htGoals > 1) $teamStats['a_over_1_5_ht']++;
                 if ($htGoals > 2) $teamStats['a_over_2_5_ht']++;
                 if ($htGoals > 3) $teamStats['a_over_3_5_ht']++;
