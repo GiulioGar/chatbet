@@ -409,7 +409,7 @@
 
                             <tr>
                                 <!-- Orario della partita -->
-                                <td data-label="Ora">{{ \Carbon\Carbon::parse($match->match_time)->format('H:i') }}</td>
+                                <td data-label="Ora"><a target="_blank" href="{{ route('match.statMatch', ['homeTeam' => $match->homeTeam->name, 'awayTeam' => $match->awayTeam->name]) }}" class="btn btn-sm btn-link">{{ \Carbon\Carbon::parse($match->match_time)->format('H:i') }}</a></td>
 
                                 <!-- Lega della partita -->
                                 <td data-label="Campionato"><span class="league"> {{ config('leagues.by_id.' . $match->homeTeam->league_id, 'Lega Sconosciuta') }} </span></td>
