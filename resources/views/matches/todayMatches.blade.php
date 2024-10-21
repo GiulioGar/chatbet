@@ -463,11 +463,51 @@
                                 <td data-label="X" class="col-risultati"><span>{{ number_format($matchesProbabilities[$match->id]['draw'] * 100, 0) }}%</span></td>
                                 <td data-label="2" class="col-risultati"><span>{{ number_format($matchesProbabilities[$match->id]['awayWin'] * 100, 0) }}%</span></td>
 
-                                <!-- Gol -->
-                                <td data-label="Over 1.5" class="col-gol"><span>{{ number_format($overUnderProbabilities[$match->id]['over_1_5'], 0) }}%</span></td>
-                                <td data-label="Over 2.5" class="col-gol"><span>{{ number_format($overUnderProbabilities[$match->id]['over_2_5'], 0) }}%</span></td>
-                                <td data-label="Over 3.5" class="col-gol"><span>{{ number_format($overUnderProbabilities[$match->id]['over_3_5'], 0) }}%</span></td>
-                                <td data-label="G/G" class="col-gol"><span>{{ number_format($overUnderProbabilities[$match->id]['both_teams_to_score'], 0) }}%</span></td>
+                              <!-- Gol -->
+                              @php
+                              $getFasciaCssClass = function ($fascia) {
+                                  if ($fascia == 'Alta') {
+                                      return 'fascia-alta';
+                                  } elseif ($fascia == 'Bassa') {
+                                      return 'fascia-bassa';
+                                  } else {
+                                      return 'fascia-media'; // Default per valori non specificati
+                                  }
+                              };
+                          @endphp
+
+<td data-label="Over 1.5" class="col-gol {{ $getFasciaCssClass($fascePerMatch[$match->id]['over_1_5'] ?? null) }}">
+    <span>
+        {{ isset($overUnderProbabilities[$match->id]['over_1_5']) ? number_format($overUnderProbabilities[$match->id]['over_1_5'], 0) : 'N/A' }}%
+
+    </span>
+</td>
+
+<td data-label="Over 2.5" class="col-gol {{ $getFasciaCssClass($fascePerMatch[$match->id]['over_2_5'] ?? null) }}">
+    <span>
+        {{ isset($overUnderProbabilities[$match->id]['over_2_5']) ? number_format($overUnderProbabilities[$match->id]['over_2_5'], 0) : 'N/A' }}%
+
+    </span>
+</td>
+
+<td data-label="Over 3.5" class="col-gol {{ $getFasciaCssClass($fascePerMatch[$match->id]['over_3_5'] ?? null) }}">
+    <span>
+        {{ isset($overUnderProbabilities[$match->id]['over_3_5']) ? number_format($overUnderProbabilities[$match->id]['over_3_5'], 0) : 'N/A' }}%
+
+    </span>
+</td>
+
+<td data-label="G/G" class="col-gol {{ $getFasciaCssClass($fascePerMatch[$match->id]['both_teams_to_score'] ?? null) }}">
+    <span>
+        {{ isset($overUnderProbabilities[$match->id]['both_teams_to_score']) ? number_format($overUnderProbabilities[$match->id]['both_teams_to_score'], 0) : 'N/A' }}%
+    </span>
+</td>
+
+
+
+
+
+
 
                                 <!-- Corner -->
                                 <td data-label="Corner" class="col-corner"> @if(isset($expectedCornersData[$match->id])) <span>{{ number_format($expectedCornersData[$match->id], 2) }}</span> @else <span>N/A</span> @endif </td>

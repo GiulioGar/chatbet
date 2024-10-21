@@ -378,3 +378,30 @@ body {
     transform: translateX(-50%);
 }
 
+/* Colori tenui per le fasce */
+.fascia-alta {
+   background-color: rgba(102, 255, 102, 0.1); /* Verde molto tenue */
+    border-left: 3px solid rgba(102, 255, 102, 0.5); /* Bordo leggero verde */
+    transition: background-color 0.3s ease, border-left 0.3s ease;
+}
+
+.fascia-bassa {
+    background-color: rgba(255, 102, 102, 0.1); /* Rosso molto tenue */
+    border-left: 3px solid rgba(255, 102, 102, 0.5); /* Bordo leggero rosso */
+    transition: background-color 0.3s ease, border-left 0.3s ease;
+}
+.fascia-media {
+    background-color: transparent; /* Nessun colore, o puoi aggiungere un altro colore */
+}
+
+/* Hover effect */
+.col-gol:hover {
+    background-color: rgba(0, 0, 0, 0.05); /* Aggiunge un leggero grigio quando si passa sopra */
+    cursor: pointer;
+}
+
+/* Effetto transizione per sfumature più fluide */
+td {
+    transition: background-color 0.3s ease, border-left 0.3s ease;
+}
+

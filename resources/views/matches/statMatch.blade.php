@@ -249,6 +249,14 @@
                 <img src="{{ asset('images/goal.png') }}" alt="" class="mr-3" style="width: 70px;">
                 <div>
                     <h4 class="mb-1">Statistiche Gol</h4>
+                    <div style="font-size: 0.6rem" class="league-average">Media camp. Over 1.5: {{ round($leagueAverages['over_1_5'], 1) }}%</div>
+                    <div style="font-size: 0.6rem" class="league-average">Media camp. Over 2.5: {{ round($leagueAverages['over_2_5'], 1) }}%</div>
+                    <div style="font-size: 0.6rem" class="league-average">Media camp. Over 3.5: {{ round($leagueAverages['over_3_5'], 1) }}%</div>
+                    <div style="font-size: 0.6rem" class="league-average">Media camp. Gol/Gol: {{ round($leagueAverages['both_teams_to_score'], 1) }}%</div>
+                    {{-- <p>Fascia Over 1.5: {{ $fascia_over_15 }}</p>
+<p>Fascia Over 2.5: {{ $fascia_over_25 }}</p>
+<p>Fascia Over 3.5: {{ $fascia_over_35 }}</p>
+<p>Fascia Gol Gol: {{ $fascia_gg }}</p> --}}
                 </div>
 
             </div>
@@ -263,7 +271,10 @@
                     <div class="stat-box text-center p-4">
                         <div class="stat-number">{{ $overUnderProbabilities['over_1_5'] }}%</div>
                         <div class="stat-description">Over 1.5</div>
-                        <div class="footer-bar footer-primary" style="width: {{ $overUnderProbabilities['over_1_5'] }}%;"></div>
+                        <div class="footer-bar"
+                        style="width: {{ $overUnderProbabilities['over_1_5'] }}%;
+                               background-color: {{ $fascia_over_15 == 'Alta' ? 'green' : ($fascia_over_15 == 'Media' ? '#ffd456' : 'red') }};">
+                   </div>
                     </div>
                 </div>
 
@@ -272,7 +283,10 @@
                     <div class="stat-box text-center p-4">
                         <div class="stat-number">{{ $overUnderProbabilities['over_2_5'] }}%</div>
                         <div class="stat-description">Over 2.5</div>
-                        <div class="footer-bar footer-warning" style="width: {{ $overUnderProbabilities['over_2_5'] }}%;"></div>
+                        <div class="footer-bar"
+                        style="width: {{ $overUnderProbabilities['over_2_5'] }}%;
+                               background-color: {{ $fascia_over_25 == 'Alta' ? 'green' : ($fascia_over_25 == 'Media' ? '#ffd456' : 'red') }};">
+                   </div>
                     </div>
                 </div>
 
@@ -281,7 +295,10 @@
                     <div class="stat-box text-center p-4">
                         <div class="stat-number">{{ $overUnderProbabilities['over_3_5'] }}%</div>
                         <div class="stat-description">Over 3.5</div>
-                        <div class="footer-bar footer-danger" style="width: {{ $overUnderProbabilities['over_3_5'] }}%;"></div>
+                        <div class="footer-bar"
+                        style="width: {{ $overUnderProbabilities['over_3_5'] }}%;
+                               background-color: {{ $fascia_over_35 == 'Alta' ? 'green' : ($fascia_over_35 == 'Media' ? '#ffd456' : 'red') }};">
+                   </div>
                     </div>
                 </div>
 
@@ -290,7 +307,10 @@
                     <div class="stat-box text-center p-4">
                         <div class="stat-number">{{ $overUnderProbabilities['both_teams_to_score'] }}%</div>
                         <div class="stat-description">Gol Gol</div>
-                        <div class="footer-bar footer-success" style="width: {{ $overUnderProbabilities['both_teams_to_score'] }}%;"></div>
+                        <div class="footer-bar"
+                        style="width: {{ $overUnderProbabilities['both_teams_to_score'] }}%;
+                               background-color: {{ $fascia_gg == 'Alta' ? 'green' : ($fascia_gg == 'Media' ? '#ffd456' : 'red') }};">
+                   </div>
                     </div>
                 </div>
             </div>
@@ -400,7 +420,6 @@
             <img src="https://media.api-sports.io/football/teams/{{ $awayTeam->team_id }}.png" alt="{{ $awayTeam->name }}" class="team-logo">
             <div>
                 <h4>{{ $awayTeam->name }}</h4>
-                <p style="color:#f0eeee">Forma attuale:{{ $awayTeam->fascia }}</p>
             </div>
         </div>
         <table class="team-stats">

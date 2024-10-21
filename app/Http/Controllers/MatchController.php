@@ -213,7 +213,7 @@ $awayPointsHomePercentage = $awayPointsGeneral > 0 ? round(($awayPointsHome / $a
 $awayPointsAwayPercentage = $awayPointsGeneral > 0 ? round(($awayPointsAway / $awayPointsGeneral) * 100, 2) : 0;
 
 
-
+Log::info("Match ID: {$match->id}");
 
     // Calcola le probabilità di vittoria, pareggio e sconfitta
     try {
@@ -245,6 +245,42 @@ $awayPointsAwayPercentage = $awayPointsGeneral > 0 ? round(($awayPointsAway / $a
 
          // Calcolo delle percentuali
         $overPercentages = $this->calculateOverPercentages($homeTeamData, $awayTeamData);
+
+// Calcola le medie del campionato
+$leagueAverages = $this->calculateLeagueAverages($match->league_id);
+ // Recupera i dati di Over per tutte le partite della lega
+ $leagueMatches = Matches::where('league_id', $match->league_id)
+ ->whereNotNull('home_score')
+ ->whereNotNull('away_score')
+ ->get();
+
+$over15_values = $leagueMatches->map(function($match) {
+return ($match->home_score + $match->away_score) >= 2 ? 100 : 0;
+})->toArray();
+
+$over25_values = $leagueMatches->map(function($match) {
+return ($match->home_score + $match->away_score) >= 3 ? 100 : 0;
+})->toArray();
+
+$over35_values = $leagueMatches->map(function($match) {
+return ($match->home_score + $match->away_score) >= 4 ? 100 : 0;
+})->toArray();
+
+$gg_values = $leagueMatches->map(function($match) {
+return ($match->home_score > 0 && $match->away_score > 0) ? 100 : 0;
+})->toArray();
+
+// Calcola la deviazione standard per ciascuna statistica
+$stddev_over_15 = $this->calculateStandardDeviation($over15_values);
+$stddev_over_25 = $this->calculateStandardDeviation($over25_values);
+$stddev_over_35 = $this->calculateStandardDeviation($over35_values);
+$stddev_gg = $this->calculateStandardDeviation($gg_values);
+
+// Determina la fascia per il match corrente
+$fascia_over_15 = $this->determineFascia($overUnderProbabilities['over_1_5'], $leagueAverages['over_1_5'], $stddev_over_15);
+$fascia_over_25 = $this->determineFascia($overUnderProbabilities['over_2_5'], $leagueAverages['over_2_5'], $stddev_over_25);
+$fascia_over_35 = $this->determineFascia($overUnderProbabilities['over_3_5'], $leagueAverages['over_3_5'], $stddev_over_35);
+$fascia_gg = $this->determineFascia($overUnderProbabilities['both_teams_to_score'], $leagueAverages['both_teams_to_score'], $stddev_gg);
 
 
 
@@ -288,6 +324,11 @@ $awayPointsAwayPercentage = $awayPointsGeneral > 0 ? round(($awayPointsAway / $a
         'overPercentages' => $overPercentages,
         'homeTeamMatches' => $homeTeamMatches,
         'awayTeamMatches' => $awayTeamMatches,
+        'leagueAverages' => $leagueAverages,
+        'fascia_over_15' => $fascia_over_15,
+        'fascia_over_25' => $fascia_over_25,
+        'fascia_over_35' => $fascia_over_35,
+        'fascia_gg' => $fascia_gg,
     ]);
 
 }
@@ -641,11 +682,114 @@ public function calculateOverPercentages($teamData, $opponentData)
 }
 
 
+private function calculateLeagueAverages($leagueId)
+{
+    // Iniziamo a loggare
+    Log::info("Calcolo delle medie del campionato per la lega ID: {$leagueId}");
+
+    $totalMatches = Matches::where('league_id', $leagueId)
+                           ->whereNotNull('home_score')
+                           ->whereNotNull('away_score')
+                           ->count();
+
+    Log::info("Partite totali con risultati: {$totalMatches}");
+
+    if ($totalMatches == 0) {
+        Log::warning("Nessuna partita trovata con risultati per la lega ID: {$leagueId}");
+        return [
+            'over_1_5' => 0,
+            'over_2_5' => 0,
+            'over_3_5' => 0,
+            'both_teams_to_score' => 0,
+        ];
+    }
+
+    // Calcolo Over 1.5
+    $over15 = Matches::where('league_id', $leagueId)
+                     ->whereNotNull('home_score')
+                     ->whereNotNull('away_score')
+                     ->whereRaw('(home_score + away_score) >= 2')
+                     ->count();
+
+    Log::info("Partite con Over 1.5: {$over15}");
+
+    // Calcolo Over 2.5
+    $over25 = Matches::where('league_id', $leagueId)
+                     ->whereNotNull('home_score')
+                     ->whereNotNull('away_score')
+                     ->whereRaw('(home_score + away_score) >= 3')
+                     ->count();
+
+    Log::info("Partite con Over 2.5: {$over25}");
+
+    // Calcolo Over 3.5
+    $over35 = Matches::where('league_id', $leagueId)
+                     ->whereNotNull('home_score')
+                     ->whereNotNull('away_score')
+                     ->whereRaw('(home_score + away_score) >= 4')
+                     ->count();
+
+    Log::info("Partite con Over 3.5: {$over35}");
+
+    // Calcolo Gol Gol
+    $bothTeamsScore = Matches::where('league_id', $leagueId)
+                             ->whereNotNull('home_score')
+                             ->whereNotNull('away_score')
+                             ->where('home_score', '>', 0)
+                             ->where('away_score', '>', 0)
+                             ->count();
+
+    Log::info("Partite con Gol Gol: {$bothTeamsScore}");
+
+    // Calcolo delle percentuali
+    $over15Percentage = ($over15 / $totalMatches) * 100;
+    $over25Percentage = ($over25 / $totalMatches) * 100;
+    $over35Percentage = ($over35 / $totalMatches) * 100;
+    $bttsPercentage = ($bothTeamsScore / $totalMatches) * 100;
+
+    Log::info("Percentuali calcolate - Over 1.5: {$over15Percentage}%, Over 2.5: {$over25Percentage}%, Over 3.5: {$over35Percentage}%, Gol Gol: {$bttsPercentage}%");
+
+    return [
+        'over_1_5' => $over15Percentage,
+        'over_2_5' => $over25Percentage,
+        'over_3_5' => $over35Percentage,
+        'both_teams_to_score' => $bttsPercentage,
+    ];
+}
+
+
+private function calculateStandardDeviation($data) {
+    $mean = array_sum($data) / count($data);
+    $squaredDifferences = array_map(function ($value) use ($mean) {
+        return pow($value - $mean, 2);
+    }, $data);
+
+    return sqrt(array_sum($squaredDifferences) / count($data));
+}
+
+private function determineFascia($matchValue, $leagueMean, $stddev) {
+    Log::info("Valore del match: $matchValue, Media del campionato: $leagueMean, Deviazione standard: $stddev");
+
+    // Riduci ulteriormente l'influenza della deviazione standard
+    $adjustedStddev = $stddev * 0.15; // o anche 0.15
+
+    if ($matchValue > $leagueMean + $adjustedStddev) {
+        Log::info("Match in Fascia Alta");
+        return 'Alta';
+    } elseif ($matchValue < $leagueMean - $adjustedStddev) {
+        Log::info("Match in Fascia Bassa");
+        return 'Bassa';
+    } else {
+        Log::info("Match in Fascia Media");
+        return 'Media';
+    }
+}
+
+
 //PAGINA MATCHES DI OGGI//
-
-
 public function todayMatches($date = null)
 {
+    // Imposta la data odierna o la data selezionata dall'utente
     if ($date === null) {
         $date = \Carbon\Carbon::today();
     } else {
@@ -655,48 +799,135 @@ public function todayMatches($date = null)
     // Recupera i match per la data selezionata
     $matches = Matches::whereDate('match_date', $date)->orderBy('match_time', 'asc')->get();
 
-    // Array per conservare le probabilità di ciascun match
+    // Inizializza le variabili per probabilità, corner attesi, e fasce
     $matchesProbabilities = [];
-    $overUnderProbabilities = []; // Aggiungiamo anche le probabilità di Over/Under
-    $expectedCornersData = []; // Nuovo array per conservare i corner attesi
+    $overUnderProbabilities = [];
+    $expectedCornersData = [];
+    $fascePerMatch = [];
+    $leagueAverages = [];
+    $standardDeviations = [];
 
-    // Itera su ogni match e calcola le probabilità e corner attesi
+    // Itera su ogni match e raccoglie le informazioni per lega
     foreach ($matches as $match) {
+        $leagueId = $match->league_id;
+
+        // Calcola le medie e deviazioni standard se non già calcolate per questa lega
+        if (!isset($leagueAverages[$leagueId])) {
+            Log::info("---DATI LEGA---");
+            Log::info("League ID utilizzato: {$leagueId}");
+
+            // Calcola le medie del campionato
+            $leagueAverages[$leagueId] = $this->calculateLeagueAverages($leagueId);
+
+            // Calcola le deviazioni standard
+            $standardDeviations[$leagueId] = [
+                'over_1_5' => $this->calculateStandardDeviationForLeague($leagueId, 'over_1_5'),
+                'over_2_5' => $this->calculateStandardDeviationForLeague($leagueId, 'over_2_5'),
+                'over_3_5' => $this->calculateStandardDeviationForLeague($leagueId, 'over_3_5'),
+                'both_teams_to_score' => $this->calculateStandardDeviationForLeague($leagueId, 'both_teams_to_score')
+            ];
+
+            Log::info("Metriche per Over 1.5: Media - {$leagueAverages[$leagueId]['over_1_5']}, Deviazione standard - {$standardDeviations[$leagueId]['over_1_5']}");
+            Log::info("Metriche per Over 2.5: Media - {$leagueAverages[$leagueId]['over_2_5']}, Deviazione standard - {$standardDeviations[$leagueId]['over_2_5']}");
+            Log::info("Metriche per Over 3.5: Media - {$leagueAverages[$leagueId]['over_3_5']}, Deviazione standard - {$standardDeviations[$leagueId]['over_3_5']}");
+            Log::info("Metriche per Gol Gol: Media - {$leagueAverages[$leagueId]['both_teams_to_score']}, Deviazione standard - {$standardDeviations[$leagueId]['both_teams_to_score']}");
+        }
+
+        // Estrai le squadre del match
         $homeTeam = $match->homeTeam;
         $awayTeam = $match->awayTeam;
 
         // Calcola i punteggi delle squadre
         $teamScores = $this->calculateTeamScores($homeTeam, $awayTeam);
 
-        // Calcola le probabilità per il match
+        // Calcola le probabilità del match
         try {
             $probabilities = $this->calculateMatchProbabilities($teamScores['homeTeamScore'], $teamScores['awayTeamScore']);
             $matchesProbabilities[$match->id] = $probabilities;
 
-            // Calcoliamo anche le probabilità Over/Under per ogni match
+            // Calcola le probabilità Over/Under
             $overUnder = $this->calculateOverUnderProbabilities($homeTeam, $awayTeam);
             $overUnderProbabilities[$match->id] = $overUnder;
 
             // Calcola i corner attesi
             $expectedCorners = $this->calculateExpectedCorners($homeTeam, $awayTeam);
             $expectedCornersData[$match->id] = $expectedCorners;
+
+            // Calcola le fasce del match basate sulle probabilità
+            $fascePerMatch[$match->id] = [
+                'over_1_5' => $this->determineFascia($overUnder['over_1_5'], $leagueAverages[$leagueId]['over_1_5'], $standardDeviations[$leagueId]['over_1_5']),
+                'over_2_5' => $this->determineFascia($overUnder['over_2_5'], $leagueAverages[$leagueId]['over_2_5'], $standardDeviations[$leagueId]['over_2_5']),
+                'over_3_5' => $this->determineFascia($overUnder['over_3_5'], $leagueAverages[$leagueId]['over_3_5'], $standardDeviations[$leagueId]['over_3_5']),
+                'both_teams_to_score' => $this->determineFascia($overUnder['both_teams_to_score'], $leagueAverages[$leagueId]['both_teams_to_score'], $standardDeviations[$leagueId]['both_teams_to_score'])
+            ];
+
+            Log::info("Match ID: {$match->id}, Fascia Over 1.5: {$fascePerMatch[$match->id]['over_1_5']}");
+            Log::info("Match ID: {$match->id}, Fascia Over 2.5: {$fascePerMatch[$match->id]['over_2_5']}");
+            Log::info("Match ID: {$match->id}, Fascia Over 3.5: {$fascePerMatch[$match->id]['over_3_5']}");
+            Log::info("Match ID: {$match->id}, Fascia Gol Gol: {$fascePerMatch[$match->id]['both_teams_to_score']}");
         } catch (\Exception $e) {
             Log::error("Errore nel calcolo delle probabilità o corner per il match con ID {$match->id}: " . $e->getMessage());
-            // Imposta probabilità a null in caso di errore
+            // Imposta i valori a null in caso di errore
             $matchesProbabilities[$match->id] = null;
             $overUnderProbabilities[$match->id] = null;
             $expectedCornersData[$match->id] = null;
+            $fascePerMatch[$match->id] = null;
         }
     }
 
+    // Passa i dati alla vista
     return view('matches.todayMatches', [
         'matches' => $matches,
         'selectedDate' => $date,
-        'matchesProbabilities' => $matchesProbabilities, // Passiamo le probabilità alla vista
-        'overUnderProbabilities' => $overUnderProbabilities, // Aggiungiamo anche le probabilità Over/Under
-        'expectedCornersData' => $expectedCornersData, // Aggiungiamo i corner attesi
+        'matchesProbabilities' => $matchesProbabilities,
+        'overUnderProbabilities' => $overUnderProbabilities,
+        'expectedCornersData' => $expectedCornersData,
+        'fascePerMatch' => $fascePerMatch,
     ]);
 }
+
+
+
+private function calculateStandardDeviationForLeague($leagueId, $metric)
+{
+    // Recupera tutte le partite della lega specificata
+    $leagueMatches = Matches::where('league_id', $leagueId)
+        ->whereNotNull('home_score')
+        ->whereNotNull('away_score')
+        ->get();
+
+    // Mappa i valori per la metrica specifica
+    $metricValues = $leagueMatches->map(function ($match) use ($metric) {
+        switch ($metric) {
+            case 'over_1_5':
+                return ($match->home_score + $match->away_score) >= 2 ? 100 : 0;
+            case 'over_2_5':
+                return ($match->home_score + $match->away_score) >= 3 ? 100 : 0;
+            case 'over_3_5':
+                return ($match->home_score + $match->away_score) >= 4 ? 100 : 0;
+            case 'both_teams_to_score':
+                return ($match->home_score > 0 && $match->away_score > 0) ? 100 : 0;
+            default:
+                return 0;
+        }
+    })->toArray();
+
+    // Calcola la deviazione standard usando i valori della metrica
+    return $this->calculateStandardDeviation($metricValues);
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
