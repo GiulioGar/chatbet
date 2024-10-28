@@ -405,3 +405,31 @@ td {
     transition: background-color 0.3s ease, border-left 0.3s ease;
 }
 
+/* Tooltip stile moderno */
+.tippy-box[data-theme~='modern'] {
+    background-color: #2A2A2A;  /* Sfondo grigio scuro */
+    color: #EAEAEA;             /* Testo grigio chiaro */
+    border-radius: 10px;        /* Angoli arrotondati */
+    padding: 10px 15px;         /* Spaziatura uniforme */
+    font-size: 14px;            /* Dimensione testo */
+    box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.3); /* Ombra morbida */
+}
+
+/* Freccia del tooltip */
+.tippy-box[data-theme~='modern'] .tippy-arrow {
+    color: #2A2A2A;  /* Colore freccia uguale allo sfondo */
+}
+
+/* Animazione di fade-in per tooltip */
+.tippy-box[data-theme~='modern'][data-state='visible'] {
+    opacity: 0;                  /* Partenza da invisibile */
+    transform: scale(0.95);      /* Leggero ridimensionamento */
+    transition: opacity 0.2s ease-out, transform 0.2s ease-out;
+}
+
+.tippy-box[data-theme~='modern'][data-state='hidden'] {
+    opacity: 1;
+    transform: scale(1);
+}
+
+

@@ -7,6 +7,13 @@
 
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 
+<!-- Tippy.js CSS (CDN) -->
+<link rel="stylesheet" href="https://unpkg.com/tippy.js@6/dist/tippy.css" />
+
+<!-- Tippy.js JavaScript (CDN) -->
+<script src="https://unpkg.com/@popperjs/core@2"></script>
+<script src="https://unpkg.com/tippy.js@6"></script>
+
 
 
 
@@ -459,9 +466,18 @@
                                 <td data-label="Logo Ospite"><img src="https://media.api-sports.io/football/teams/{{ $match->awayTeam->team_id }}.png" alt="{{ $match->awayTeam->name }}" class="team-logo"></td>
 
                                 <!-- Risultati -->
-                                <td data-label="1" class="col-risultati"><span>{{ number_format($matchesProbabilities[$match->id]['homeWin'] * 100, 0) }}%</span></td>
-                                <td data-label="X" class="col-risultati"><span>{{ number_format($matchesProbabilities[$match->id]['draw'] * 100, 0) }}%</span></td>
-                                <td data-label="2" class="col-risultati"><span>{{ number_format($matchesProbabilities[$match->id]['awayWin'] * 100, 0) }}%</span></td>
+                                <td data-label="1" class="col-risultati" data-tippy-content="Quota: {{ number_format(1 / ($matchesProbabilities[$match->id]['homeWin']), 2) }}">
+                                    <span>{{ number_format($matchesProbabilities[$match->id]['homeWin'] * 100, 0) }}%</span>
+                                </td>
+
+                                <td data-label="X" class="col-risultati" data-tippy-content="Quota: {{ number_format(1 / ($matchesProbabilities[$match->id]['draw']), 2) }}">
+                                    <span>{{ number_format($matchesProbabilities[$match->id]['draw'] * 100, 0) }}%</span>
+                                </td>
+
+                                <td data-label="2" class="col-risultati" data-tippy-content="Quota: {{ number_format(1 / ($matchesProbabilities[$match->id]['awayWin']), 2) }}">
+                                    <span>{{ number_format($matchesProbabilities[$match->id]['awayWin'] * 100, 0) }}%</span>
+                                </td>
+
 
                               <!-- Gol -->
                               @php
@@ -476,32 +492,26 @@
                               };
                           @endphp
 
-<td data-label="Over 1.5" class="col-gol {{ $getFasciaCssClass($fascePerMatch[$match->id]['over_1_5'] ?? null) }}">
-    <span>
-        {{ isset($overUnderProbabilities[$match->id]['over_1_5']) ? number_format($overUnderProbabilities[$match->id]['over_1_5'], 0) : 'N/A' }}%
-
-    </span>
+<td data-label="Over 1.5" class="col-gol {{ $getFasciaCssClass($fascePerMatch[$match->id]['over_1_5'] ?? null) }}"
+    data-tippy-content="Quota: {{ isset($overUnderProbabilities[$match->id]['over_1_5']) ? number_format(1 / ($overUnderProbabilities[$match->id]['over_1_5'] / 100), 2) : 'N/A' }}">
+    <span>{{ isset($overUnderProbabilities[$match->id]['over_1_5']) ? number_format($overUnderProbabilities[$match->id]['over_1_5'], 0) : 'N/A' }}%</span>
 </td>
 
-<td data-label="Over 2.5" class="col-gol {{ $getFasciaCssClass($fascePerMatch[$match->id]['over_2_5'] ?? null) }}">
-    <span>
-        {{ isset($overUnderProbabilities[$match->id]['over_2_5']) ? number_format($overUnderProbabilities[$match->id]['over_2_5'], 0) : 'N/A' }}%
-
-    </span>
+<td data-label="Over 2.5" class="col-gol {{ $getFasciaCssClass($fascePerMatch[$match->id]['over_2_5'] ?? null) }}"
+    data-tippy-content="Quota: {{ isset($overUnderProbabilities[$match->id]['over_2_5']) ? number_format(1 / ($overUnderProbabilities[$match->id]['over_2_5'] / 100), 2) : 'N/A' }}">
+    <span>{{ isset($overUnderProbabilities[$match->id]['over_2_5']) ? number_format($overUnderProbabilities[$match->id]['over_2_5'], 0) : 'N/A' }}%</span>
 </td>
 
-<td data-label="Over 3.5" class="col-gol {{ $getFasciaCssClass($fascePerMatch[$match->id]['over_3_5'] ?? null) }}">
-    <span>
-        {{ isset($overUnderProbabilities[$match->id]['over_3_5']) ? number_format($overUnderProbabilities[$match->id]['over_3_5'], 0) : 'N/A' }}%
-
-    </span>
+<td data-label="Over 3.5" class="col-gol {{ $getFasciaCssClass($fascePerMatch[$match->id]['over_3_5'] ?? null) }}"
+    data-tippy-content="Quota: {{ isset($overUnderProbabilities[$match->id]['over_3_5']) ? number_format(1 / ($overUnderProbabilities[$match->id]['over_3_5'] / 100), 2) : 'N/A' }}">
+    <span>{{ isset($overUnderProbabilities[$match->id]['over_3_5']) ? number_format($overUnderProbabilities[$match->id]['over_3_5'], 0) : 'N/A' }}%</span>
 </td>
 
-<td data-label="G/G" class="col-gol {{ $getFasciaCssClass($fascePerMatch[$match->id]['both_teams_to_score'] ?? null) }}">
-    <span>
-        {{ isset($overUnderProbabilities[$match->id]['both_teams_to_score']) ? number_format($overUnderProbabilities[$match->id]['both_teams_to_score'], 0) : 'N/A' }}%
-    </span>
+<td data-label="G/G" class="col-gol {{ $getFasciaCssClass($fascePerMatch[$match->id]['both_teams_to_score'] ?? null) }}"
+    data-tippy-content="Quota: {{ isset($overUnderProbabilities[$match->id]['both_teams_to_score']) ? number_format(1 / ($overUnderProbabilities[$match->id]['both_teams_to_score'] / 100), 2) : 'N/A' }}">
+    <span>{{ isset($overUnderProbabilities[$match->id]['both_teams_to_score']) ? number_format($overUnderProbabilities[$match->id]['both_teams_to_score'], 0) : 'N/A' }}%</span>
 </td>
+
 
 
 
@@ -535,9 +545,21 @@
                                 <td data-label="Falli F" class="col-sanzioni">{{ $awayTotalFoulsPerMatch }}</td>
 
                                  <!-- Tempo 1 -->
-                                 <td data-label="over 0.5" class="col-tempo1"><span>{{ $averageOver05 }}%</span></td>
-                                 <td data-label="over 1.5" class="col-tempo1"><span>{{ $averageOver15 }}%</span></td>
-                                 <td data-label="over 2.5" class="col-tempo1"><span>{{ $averageOver25 }}%</span></td>
+                                 <td data-label="over 0.5" class="col-tempo1"
+                                 data-tippy-content="Quota: {{ $averageOver05 > 0 ? number_format(1 / ($averageOver05 / 100), 2) : 'N/A' }}">
+                                 <span>{{ $averageOver05 }}%</span>
+                             </td>
+
+                             <td data-label="over 1.5" class="col-tempo1"
+                                 data-tippy-content="Quota: {{ $averageOver15 > 0 ? number_format(1 / ($averageOver15 / 100), 2) : 'N/A' }}">
+                                 <span>{{ $averageOver15 }}%</span>
+                             </td>
+
+                             <td data-label="over 2.5" class="col-tempo1"
+                                 data-tippy-content="Quota: {{ $averageOver25 > 0 ? number_format(1 / ($averageOver25 / 100), 2) : 'N/A' }}">
+                                 <span>{{ $averageOver25 }}%</span>
+                             </td>
+
 
                             </tr>
                             @endforeach
@@ -630,6 +652,14 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Chiama la funzione di inizializzazione per mostrare di default "Risultati"
     initializeFilters();
+
+
+    tippy('[data-tippy-content]', {
+        placement: 'top',  // Scegli la posizione del tooltip
+        theme: 'light',    // Tema chiaro
+        animation: 'fade', // Animazione leggera
+    });
+
 });
 
 
